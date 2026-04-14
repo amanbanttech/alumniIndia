@@ -3,6 +3,14 @@
 @section('content')
     <div class="content-wrapper">
         <div class="commmon-crads">
+            @if (Session::has('success'))
+                                <div class="alert alert-success">{{ Session::get('success') }}</div>
+                            @endif
+
+                            @if (Session::has('error'))
+                                <div class="alert alert-danger">{{ Session::get('error') }}</div>
+                            @endif
+
 
             <div class="row">
                 <div class="col-xxl">
@@ -13,14 +21,7 @@
                             <span>Update Password</span>
                         </div>
                         <div class="card-body">
-                            @if (Session::has('success'))
-                                <div class="alert alert-success">{{ Session::get('success') }}</div>
-                            @endif
-
-                            @if (Session::has('error'))
-                                <div class="alert alert-danger">{{ Session::get('error') }}</div>
-                            @endif
-
+                            
                             <form action="{{ route('admin.password.update') }}" method="POST" novalidate>
                                 @csrf
 

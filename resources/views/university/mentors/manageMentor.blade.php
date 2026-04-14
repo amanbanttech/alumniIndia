@@ -2,15 +2,7 @@
 
 @section('content')
     <div class="content-wrapper">
-        <div class="container-xxl flex-grow-1 container-p-y">
-
-            {{-- Header --}}
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h4 class="mb-0">Manage Mentors</h4>
-                <a href="{{ route('university.mentor.add') }}" class="btn btn-primary">
-                    <i class="bx bx-plus me-1"></i> Add Mentor
-                </a>
-            </div>
+        <div class="commmon-crads">
             @if (session('success'))
                 <div class="alert alert-success">{{ session('success') }}</div>
             @endif
@@ -18,6 +10,19 @@
             @if (session('error'))
                 <div class="alert alert-danger">{{ session('error') }}</div>
             @endif
+
+            {{-- Header --}}
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div class="simple-dashboard-heading">
+                    <i class="fa fa-user" aria-hidden="true"></i>
+                    <span>Manage Mentors</span>
+                </div>
+
+            </div>
+            <div class="btn-ad-asll"> <a href="{{ route('university.mentor.add') }}" class="btn btn-primary">
+                    <i class="bx bx-plus me-1"></i> Add Mentor
+                </a></div>
+
 
             {{-- Table Card --}}
             <div class="card">
@@ -31,7 +36,7 @@
                                 <th>Email</th>
                                 <th>Sport play</th>
 
-                                <th class="text-center">Action</th>
+                                <th class="">Action</th>
                             </tr>
                         </thead>
 
@@ -42,15 +47,15 @@
                                     <td>{{ ucfirst($mentor->user->name ?? '-') }}</td>
                                     <td>{{ $mentor->user->phoneNumber ?? '-' }}</td>
                                     <td>{{ $mentor->user->email ?? '-' }}</td>
-                                    <td>{{ $mentor->sport->name ?? '-' }}</td>
-                                    <td class="text-center">
+                                    <td>{{ $mentor->sport->sport->name ?? '-' }}</td>
+                                    <td class="">
                                         <a href="{{ route('university.mentor.edit', $mentor->id) }}"
-                                            class="btn btn-sm btn-warning">Edit</a>
+                                            class="btn btn-sm btn-edits"><i class="bx bx-edit-alt"></i>Edit</a>
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="5" class="text-center text-muted py-4">
+                                    <td colspan="5" class="text-center text-danger py-4">
                                         No Mentors found
                                     </td>
                                 </tr>

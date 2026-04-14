@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Admin\OtpTrait;
+use Exception;
 
 class UniversityAuthController extends Controller
 {
@@ -17,9 +18,14 @@ class UniversityAuthController extends Controller
 
     public function loginView()
     {
-        return view('university.auth.login');
-    }
+        try {
+            return view('university.auth.login');
+        } catch (Exception $e) {
+            Log::error('Failed to open university login page: ' . $e->getMessage());
 
+            return back()->withInput()->with('error', 'Something went wrong! Please try again.');
+        }
+    }
     public function sendLoginOtp(Request $request)
     {
         try {
@@ -51,7 +57,7 @@ class UniversityAuthController extends Controller
                 ], 422);
             }
 
-            
+
 
             // Check rate limiting - prevent spam (max 3 OTPs in 5 minutes)
             $recentOtps = OtpValidation::where('phone', $request->mobile)
@@ -132,7 +138,7 @@ class UniversityAuthController extends Controller
 
             return response()->json([
                 'status' => true,
-                'message' => 'OTP Verified Successfully'
+                'message' => 'OTP verification completed successfully.'
             ]);
         } catch (\Exception $e) {
             Log::error('Login OTP Verify Error: ' . $e->getMessage());
@@ -145,7 +151,11 @@ class UniversityAuthController extends Controller
 
     public function login(Request $request)
     {
-        $request->validate(['mobile' => 'required|digits:10']);
+        $request->validate(['mobile' => 'required|digits:10|regex:/^[6-9]\d{9}$/'], [
+            'mobile.required' => 'Please enter your mobile number.',
+            'mobile.digits' => 'Mobile number must be exactly 10 digits',
+            'mobile.regex' => 'Please enter a valid mobile number'
+        ]);
 
         try {
 
@@ -190,6 +200,14 @@ class UniversityAuthController extends Controller
                 return response()->json([
                     'status' => false,
                     'message' => 'University not found'
+                ], 403);
+            }
+
+            //  ACCOUNT STATUS CHECK (IMPORTANT)
+            if ($user->account_status == 0) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Invalid credentials.Access restricted.'
                 ], 403);
             }
 

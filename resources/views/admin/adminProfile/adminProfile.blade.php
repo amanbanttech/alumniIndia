@@ -3,6 +3,13 @@
 @section('content')
     <div class="content-wrapper">
              <div class="commmon-crads">
+                 @if (Session::has('success'))
+                                <div class="alert alert-success">{{ Session::get('success') }}</div>
+                            @endif
+
+                            @if (Session::has('error'))
+                                <div class="alert alert-danger">{{ Session::get('error') }}</div>
+                            @endif
 
             <div class="row">
                 <div class="col-xxl">
@@ -14,13 +21,7 @@
     <span>Edit Profile</span>
 </div>
                         <div class="card-body">
-                            @if (Session::has('success'))
-                                <div class="alert alert-success">{{ Session::get('success') }}</div>
-                            @endif
-
-                            @if (Session::has('error'))
-                                <div class="alert alert-danger">{{ Session::get('error') }}</div>
-                            @endif
+                           
 
                             <form action="{{ route('admin.profile.update') }}" method="POST" enctype="multipart/form-data"
                                 novalidate>
@@ -54,16 +55,15 @@
 
                                 <!-- Image -->
                                 <div class="row mb-3">
-                                    <label class="col-sm-12 col-form-label">
-                                        Image 
-                                        <span style="font-size:14px">(200 × 200)</span>
-                                    </label>
+                                   
 
                                     <div class="col-sm-12">
                                         
-
+                                      <label class="col-sm-12 col-form-label">
+                                        Image 
+                                        <span style="font-size:14px">(200 × 200)</span>
+                                    </label>
                                         <input type="file" name="image" class="form-control">
-
                                         <small class="text-allows">
                                             Allowed formats: JPG, JPEG, PNG, WEBP. max size: 200px X 200px.
                                         </small><img id="imgPreview" src="{{ asset('admin_assets/images/' . Auth::user()->image) }}"

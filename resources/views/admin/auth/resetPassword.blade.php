@@ -10,7 +10,7 @@
     <title>AlumniIndia - Reset Password </title>
 
     <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="{{ asset('admin_assets/assets/img/favicon/favicon.ico') }}" />
+    <link rel="icon" type="image/x-icon" href="{{ asset('admin_assets/assets/img/favicon/favicon.png') }}" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap"
         rel="stylesheet">
 
@@ -54,9 +54,9 @@
                 <div class="row">
                     <div class="col-md-6 auth-left">
                         <div class="auth-left-content">
-                            <h2>Welcome to Admin Login</h2>
+                            <h2>Reset Your Admin Password</h2>
                             <p>
-                                Securely access your admin dashboard to manage alumni data and platform operations.
+                                Create a new password to securely regain access to your admin dashboard.
                             </p>
                         </div>
                     </div>

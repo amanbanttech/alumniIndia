@@ -12,15 +12,10 @@ class State extends Model
         'name',
     ];
 
-    public function universitys()
-    {
-        return $this->belongsToMany(
-            University::class,
-            'university_states',
-            'state_id',
-            'university_id'
-        );
-    }
+    public function university()
+{
+    return $this->hasMany(University::class);
+}
 
     public function athletes()
     {

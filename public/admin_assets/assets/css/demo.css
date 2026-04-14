@@ -337,6 +337,9 @@
   margin: 0 auto;
 }
 
+.simple-dashboard-heading span {
+  text-align: left;
+}
 
 @media (max-width: 768px) {
   .header {
@@ -344,11 +347,48 @@
   }
 
   .content {
-    padding: 30px;
+    padding: 11px;
+  }
+
+  .simple-dashboard-heading span {
+    line-height: 22px;
   }
 
   .stats-container {
     grid-template-columns: 1fr;
+  }
+
+  button#sendOtpBtn {
+    font-size: 11px !important;
+    min-width: 56px !important;
+    ;
+    padding: 2px !important;
+    line-height: 14px !important;
+  }
+
+  .logos-grid {
+    gap: 12px;
+  }
+
+  .info-card {
+    padding: 14px 14px;
+    margin-bottom: 22px;
+  }
+
+  .info-title {
+    font-size: 22px;
+    margin-bottom: 4px;
+  }
+
+  .info-section-title {
+    font-size: 15px;
+    margin-bottom: 12px;
+    padding: 11px;
+    letter-spacing: .3px;
+  }
+
+  .info-section {
+    padding: 17px 11px;
   }
 
   .logos-grid {
@@ -698,7 +738,19 @@ button#sendOtpBtn {
 
 
 @media (max-width: 991px) {
-  .auth-ui .auth-left {
+
+  /* .auth-ui .auth-left {
+    display: none;
+  } */
+  .login-sections {
+    padding: 18px 1px;
+    border-radius: 18px;
+    text-align: left;
+  }
+}
+
+@media (max-width:768px) {
+  .auth-left {
     display: none;
   }
 }
@@ -803,7 +855,7 @@ button#sendOtpBtn {
   border-radius: 11px;
   background: #000;
   border: none;
-      font-weight: 500;
+  font-weight: 500;
   color: #fff;
   transition: 0.3s ease;
   font-size: 20px;
@@ -835,6 +887,31 @@ button#sendOtpBtn {
 
 @media (max-width: 576px) {
   .login-sections {
-    padding: 35px 25px;
+    padding: 0px 0px;
   }
+
+  .login-sections h1 {
+    font-size: 32px;
+  }
+
+  .login-sections .btn-primary {
+    height: 51px;
+    font-size: 18px;
+  }
+
+  .login-sections p {
+    font-size: 15px;
+  }
+
+  .login-sections p {
+    padding-top: 5px;
+  }
+
+  .back-login {
+    margin-top: 16px;
+  }
+
+
+}  a.back-login.btn-login-2 {
+    display: inline-flex;
 }

@@ -29,12 +29,13 @@ class AdminUniversityController extends Controller
 
             $pageTitle = 'Manage Universities';
 
-            $universities = University::with('user')
+            $universities = University::with('user', 'state')
                 ->orderBy('id', 'desc')
                 ->get();
 
             return view('admin.manageUniversity.universityList', compact('pageTitle', 'universities'));
         } catch (Exception $e) {
+            log::error($e);
             return back()->with('error', 'Unable to load password update page.');
         }
     }
@@ -42,7 +43,7 @@ class AdminUniversityController extends Controller
     public function add()
     {
         try {
-            $pageTitle = 'Add Universities';
+            $pageTitle = 'Add University';
             $states = State::orderBy('name')->get();
 
             return view('admin.manageUniversity.addUniversity', compact('pageTitle', 'states'));
@@ -78,7 +79,7 @@ class AdminUniversityController extends Controller
                 return response()->json([
                     'success' => false,
                     'already_registered' => true,
-                    'message' => 'This mobile number is already registered. Please login.'
+                    'message' => 'This mobile number is already registered. Please use a different mobile number.'
                 ], 422);
             }
 
@@ -162,7 +163,7 @@ class AdminUniversityController extends Controller
 
             return response()->json([
                 'status' => true,
-                'message' => 'Mobile number verified successfully!'
+                'message' => 'OTP verified successfully!'
             ]);
 
         } catch (\Exception $e) {
@@ -186,8 +187,8 @@ class AdminUniversityController extends Controller
                 'address' => 'required|string',
                 'city' => 'required|string',
                 'state_id' => 'required|exists:states,id',
-                'emblem_logo' => 'nullable|file|mimes:webp|max:2048',
-                'sports_logo' => 'nullable|file|mimes:webp|max:2048',
+                'emblem_logo' => 'nullable',
+                'sports_logo' => 'nullable',
             ],
             [
                 'email.email' => 'Please enter a valid email address.',
@@ -197,6 +198,7 @@ class AdminUniversityController extends Controller
                 'name.regex' => 'The name should contain only letters and spaces.',
                 'name.required' => 'The university name field is required.',
                 'about.required' => 'The about university field is required.',
+
             ],
 
         );
@@ -219,6 +221,23 @@ class AdminUniversityController extends Controller
                 ->withInput();
 
         }
+
+        $otpRecord = OtpValidation::where('phone', $request->mobile)
+            ->where('otp', $request->otp)
+            ->where('type', 'admin')
+            ->latest()
+            ->first();
+
+        if (!$otpRecord) {
+            return back()->with('error', 'Invalid OTP')->withInput();
+        }
+
+        // Expiry check (5 min)
+        if ($otpRecord->created_at < now()->subMinutes(5)) {
+            return back()->with('error', 'OTP expired')->withInput();
+        }
+
+
 
         DB::beginTransaction();
 
@@ -256,12 +275,12 @@ class AdminUniversityController extends Controller
                 'city' => $request->city,
                 'address' => $request->address,
                 'sports_logo' => $sportsFileName,
-            ]);
-
-            DB::table('university_states')->insert([
-                'university_id' => $university->id,
                 'state_id' => $request->state_id,
             ]);
+
+            
+
+
 
             DB::commit();
 
@@ -272,15 +291,16 @@ class AdminUniversityController extends Controller
                 'loginUrl' => route('university.login.view'),
             ], function ($message) use ($user) {
                 $message->to($user->email);
-                $message->subject('University Registration Successful');
+                $message->subject('University Account Created Successfully');
             });
 
             session()->forget('verified_registration_phone');
 
-            return redirect()
-                ->route('admin.university.list')
-                ->with('success', 'University added successfully');
-
+            return response()->json([
+                'status' => true,
+                'message' => 'University added successfully',
+                'redirect' => route('admin.university.list')
+            ]);
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -299,10 +319,10 @@ class AdminUniversityController extends Controller
     {
         try {
             $pageTitle = 'Add University';
-            $university = University::with(['user', 'states'])->findOrFail($id);
+            $university = University::with(['user', 'state'])->findOrFail($id);
             $states = State::orderBy('name')->get();
 
-            $currentStateId = optional($university->states->first())->id;
+            $currentStateId = optional($university->state)->id;
 
 
             return view('admin.manageUniversity.editUniversity', compact('university', 'currentStateId', 'states', 'pageTitle'));
@@ -327,8 +347,8 @@ class AdminUniversityController extends Controller
                 'address' => 'required|string',
                 'city' => 'required|string',
                 'state_id' => 'required|exists:states,id',
-                'emblem_logo' => 'nullable|file|mimes:webp|max:2048',
-                'sports_logo' => 'nullable|file|mimes:webp|max:2048',
+                'emblem_logo' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+                'sports_logo' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
             ],
             [
                 'state_id.required' => 'The state field is required.',
@@ -336,6 +356,7 @@ class AdminUniversityController extends Controller
                 'name.regex' => 'The name should contain only letters and spaces.',
                 'name.required' => 'The university name field is required.',
                 'about.required' => 'The about university field is required.',
+
             ]
         );
         if ($validator->fails()) {
@@ -343,6 +364,30 @@ class AdminUniversityController extends Controller
                 ->withErrors($validator)
                 ->withInput();
         }
+
+        if ($request->mobile != $university->user->phoneNumber) {
+
+            if ($request->otp_verified != 1) {
+                return back()
+                    ->withErrors(['otp_verified' => 'Please verify mobile number before updating.'])
+                    ->withInput();
+            }
+            $otpRecord = OtpValidation::where('phone', $request->mobile)
+                ->where('otp', $request->otp)
+                ->where('type', 'admin')
+                ->latest()
+                ->first();
+
+            if (!$otpRecord) {
+                return back()->with('error', 'Invalid OTP')->withInput();
+            }
+
+            // Expiry check (5 min)
+            if ($otpRecord->created_at < now()->subMinutes(5)) {
+                return back()->with('error', 'OTP expired')->withInput();
+            }
+        }
+
 
 
         DB::beginTransaction();
@@ -385,16 +430,12 @@ class AdminUniversityController extends Controller
             $university->update([
                 'city' => $request->city,
                 'about' => $request->about,
+                'state_id' => $request->state_id,
                 'address' => $request->address,
                 'sports_logo' => $sportsFileName,
             ]);
 
-            /* ✅ NEW: UPDATE PIVOT STATE */
-            DB::table('university_states')
-                ->where('university_id', $university->id)
-                ->update([
-                    'state_id' => $request->state_id,
-                ]);
+            
 
             DB::commit();
 
@@ -413,7 +454,7 @@ class AdminUniversityController extends Controller
     {
         try {
             $pageTitle = 'View University';
-            $university = University::with(['user', 'states'])->findOrFail($id);
+            $university = University::with(['user', 'state'])->findOrFail($id);
             return view('admin.manageUniversity.viewUniversity', compact('pageTitle', 'university'));
 
         } catch (Exception $e) {

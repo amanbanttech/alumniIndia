@@ -8,7 +8,7 @@ class UniversitySport extends Model
 {
     protected $fillable = [
         'university_id',
-        'name',
+        'sport_id',
         'category'
     ];
 
@@ -22,6 +22,16 @@ class UniversitySport extends Model
         return $this->hasMany(Mentor::class, 'sport_id');
     }
 
+
+    public function sport()
+    {
+        return $this->belongsTo(Sport::class, 'sport_id');
+    }
+
+    public function scholarshipSeats()
+    {
+        return $this->hasMany(ScholarshipSeat::class, 'sport_id');
+    }
 
 }
 

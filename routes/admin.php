@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminAuthController;
 use App\Http\Controllers\Admin\AdminProfileController;
 use App\Http\Controllers\Admin\AdminUniversityController;
+use App\Http\Controllers\Admin\AdminPrivacyPolicyController;
 
 
 
@@ -44,14 +45,18 @@ Route::prefix('admin')->group(function () {
         Route::post('/password/update', [AdminProfileController::class, 'updatepassword'])->name('admin.password.update');
 
         // MANAGE UNIVERSITY
-        Route::get('/university-list', [AdminUniversityController::class, 'universitylist'])->name('admin.university.list');
+        Route::get('/universities-list', [AdminUniversityController::class, 'universitylist'])->name('admin.university.list');
         Route::get('/university-add', [AdminUniversityController::class, 'add'])->name('admin.university.add');
         Route::post('/university-store', [AdminUniversityController::class, 'store'])->name('admin.university.store');
-        Route::post('/university/send-otp',[AdminUniversityController::class, 'sendOtp'])->name('admin.university.sendOtp');
-        Route::post( '/university/verify-otp',[AdminUniversityController::class, 'verifyOtp'])->name('admin.university.verifyOtp');
-        Route::get('/university-edit/{id}',[AdminUniversityController::class, 'edit'])->name('admin.university.edit');
+        Route::post('/university/send-otp', [AdminUniversityController::class, 'sendOtp'])->name('admin.university.sendOtp');
+        Route::post('/university/verify-otp', [AdminUniversityController::class, 'verifyOtp'])->name('admin.university.verifyOtp');
+        Route::get('/university-edit/{id}', [AdminUniversityController::class, 'edit'])->name('admin.university.edit');
         Route::put('/admin/university-update/{id}', [AdminUniversityController::class, 'update'])->name('admin.university.update');
         Route::get('/university-view/{id}', [AdminUniversityController::class, 'view'])->name('admin.university.view');
+
+        // PRIVACY POLICY
+        Route::get('/privacy-policy/edit', [AdminPrivacyPolicyController::class, 'edit'])->name('admin.privacy-policy.edit');
+        Route::post('/privacy-policy/update', [AdminPrivacyPolicyController::class, 'update'])->name('admin.privacy-policy.update');
 
 
 

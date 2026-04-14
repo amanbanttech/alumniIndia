@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\AthleteSportDetail;
+use App\Models\AthleteUniversityPreference;
+use App\Models\AthleteVideo;
 
 
 class Athlete extends Model
@@ -12,11 +14,12 @@ class Athlete extends Model
     use HasFactory;
 
     protected $fillable = [
+        'athlete_id',
         'user_id',
         'name',
         'gender',
         'date_of_birth',
-        'nationality',
+        'nationality_id',
         'address',
         'city',
         'zip_code',
@@ -57,4 +60,38 @@ class Athlete extends Model
         return $this->hasOne(AthleteDocument::class);
     }
 
+    public function universityPreference()
+    {
+        return $this->hasOne(
+            AthleteUniversityPreference::class,
+            'athlete_id',
+            'id'
+        );
+    }
+
+    public function athleteScholarship()
+    {
+        return $this->hasMany(AthleteScholarship::class, 'athlete_id');
+    }
+
+    public function videos()
+    {
+        return $this->hasMany(AthleteVideo::class, 'athlete_id', 'id');
+    }
+
+    public function nationality()
+    {
+        return $this->belongsTo(Nationality::class);
+    }
+
+    public function mentorAssign()
+    {
+        return $this->hasOne(AthleteAssignMentor::class, 'athlete_id');
+    }
+
+
+    public function mentorFeedbacks()
+    {
+        return $this->hasMany(MentorFeedback::class, 'athlete_id');
+    }
 }

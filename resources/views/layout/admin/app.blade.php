@@ -6,16 +6,17 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <title>AlumniIndia - {{ $pageTitle ?? '' }}</title>
+  <title>AlumniIndia - {{ $pageTitle ?? '' }}</title>
   <meta name="csrf-token" content="{{ csrf_token() }}">
 
   <!-- Favicon -->
-  <link rel="icon" type="image/x-icon" href="{{ asset('admin_assets/assets/img/favicon/favicon.ico') }}" />
+  <link rel="icon" type="image/x-icon" href="{{ asset('admin_assets/assets/img/favicon/favicon.png') }}" />
 
   <!-- Fonts -->
   <!-- Fonts -->
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 
   <!-- Icons -->
   <link rel="stylesheet" href="{{ asset('admin_assets/assets/vendor/fonts/boxicons.css') }}" />
@@ -90,8 +91,8 @@
       <!-- ================= SIDEBAR ================= -->
       <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
         <div class="app-brand demo">
-          <a href="{{ route('admin.dashboard') }}" class="app-brand-link">
-           
+          <a href="{{ route('frontend.index') }}" class="app-brand-link">
+
             <img src="{{ asset('admin_assets/images/logo-white.png') }}" alt="logo">
           </a>
           <a href="javascript:void(0);" class="layout-menu-toggle menu-link ms-auto d-xl-none">
@@ -109,8 +110,15 @@
 
           <li class="menu-item {{ request()->routeIs('admin.university.list') ? 'active' : '' }}">
             <a href="{{ route('admin.university.list') }}" class="menu-link">
-              <i class="fa fa-university"></i> 
+              <i class="fa fa-university"></i>
               <div>Manage Universities</div>
+            </a>
+          </li>
+
+          <li class="menu-item {{ request()->routeIs('admin.privacy-policy.edit') ? 'active' : '' }}">
+            <a href="{{ route('admin.privacy-policy.edit') }}" class="menu-link">
+              <i class="fa fa-file-alt"></i>
+              <div>Privacy Policy</div>
             </a>
           </li>
         </ul>
@@ -134,32 +142,29 @@
             <ul class="navbar-nav flex-row align-items-center ms-auto">
               <li class="nav-item dropdown-user dropdown">
                 <a class="nav-link dropdown-toggle hide-arrow" href="#" data-bs-toggle="dropdown">
-                 <div class="d-flex align-items-center gap-2">
+                  <div class="d-flex align-items-center gap-2">
 
-    <!-- Avatar -->
-    <div class="avatar avatar-online">
-      <img 
-        src="{{ Auth::user()->image
-          ? asset('admin_assets/images/' . Auth::user()->image)
-          : asset('admin_assets/assets/img/avatars/1.png') }}"
-        alt="Admin"
-      >
-    </div>
+                    <!-- Avatar -->
+                    <div class="avatar avatar-online">
+                      <img src="{{ Auth::user()->image
+  ? asset('admin_assets/images/' . Auth::user()->image)
+  : asset('admin_assets/assets/img/avatars/1.png') }}" alt="Admin">
+                    </div>
 
-    <!-- Name + Role -->
-    <div class="admin-info text-start">
-      <div class="admin-name">
-        {{ Auth::user()->name ?? 'Admin User' }}
-      </div>
-      <div class="admin-role">
-        Administrator
-      </div>
-    </div>
+                    <!-- Name + Role -->
+                    <div class="admin-info text-start">
+                      <div class="admin-name">
+                        {{ Auth::user()->name ?? 'Admin User' }}
+                      </div>
+                      <div class="admin-role">
+                        Administrator
+                      </div>
+                    </div>
 
-    <!-- Chevron -->
-    <i class="fas fa-chevron-down admin-chevron"></i>
+                    <!-- Chevron -->
+                    <i class="fas fa-chevron-down admin-chevron"></i>
 
-  </div>
+                  </div>
                 </a>
 
                 <ul class="dropdown-menu dropdown-menu-end">
@@ -171,7 +176,7 @@
                   </li> -->
                   <li>
                     <a class="dropdown-item" href="{{ route('admin.profile.view') }}">
-                       <i class="fa fa-user"></i> My Profile
+                      <i class="fa fa-user"></i> My Profile
                     </a>
                   </li>
                   <li>
@@ -187,7 +192,7 @@
                   </li>
                   <li>
                     <a class="dropdown-item" href="{{ route('admin.logout') }}">
-                       <i class='bx bx-log-in-circle'></i>Logout
+                      <i class='bx bx-log-in-circle'></i>Logout
                     </a>
                   </li>
                 </ul>
@@ -206,7 +211,10 @@
           </div>
 
           <footer class="content-footer footer bg-footer-theme text-end px-4 py-2">
-            © {{ date('Y') }} Alumni Connect
+            © {{ date('Y') }}
+            Alumni India. Powered by<a href="https://www.banttech.com/" target="_blank" class="text-decoration-none">
+              <b>Banttech</b>
+            </a>
           </footer>
         </div>
         <!-- ================= /CONTENT ================= -->
@@ -221,7 +229,7 @@
   <script src="{{ asset('admin_assets/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js') }}"></script>
   <script src="{{ asset('admin_assets/assets/vendor/js/menu.js') }}"></script>
   <script src="{{ asset('admin_assets/assets/js/main.js') }}"></script>
-
+<script src="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/summernote-lite.min.js"></script>
 </body>
 
 </html>

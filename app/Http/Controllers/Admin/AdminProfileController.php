@@ -107,12 +107,12 @@ class AdminProfileController extends Controller
             'password' => 'required|regex:/[@$!%*#?&]/|regex:/[A-Z]/|min:6',
             'password_confirmation' => 'required|same:password',
         ], [
-            'old_password.required' => 'Current password field is required',
-            'password.required' => 'New password field is required',
-            'password.min' => 'New password must be at least 8 characters',
-            'password_confirmation.required' => 'Confirm password field is required',
-            'password_confirmation.same' => 'The confirm password must match the new password.',
-            'password.regex' => 'The password must be at least 8 characters long and include uppercase and lowercase letters, numbers, and special characters.',
+            'old_password.required' => 'Current password field is required.',
+            'password.required' => 'New password field is required.',
+            'password.min' => 'New password must be at least 8 characters.',
+            'password_confirmation.required' => 'Confirm password field is required.',
+            'password_confirmation.same' => 'New Password and Confirm Password must be same.',
+            'password.regex' => 'The password must be at least 8 characters long and include uppercase letters, lowercase letters, numbers, and special characters.',
 
         ]);
 

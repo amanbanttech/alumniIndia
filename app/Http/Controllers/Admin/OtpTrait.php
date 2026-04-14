@@ -57,7 +57,7 @@ trait OtpTrait
             }
 
             // CHECK EXPIRY
-            if (now()->greaterThan($otpRec->expire_at)) {
+            if ($otpRec->expires_at && now()->gt($otpRec->expires_at)) {
                 // Delete expired OTP
                 $otpRec->delete();
                 return ['error' => 'OTP expired. Please request a new one.'];

@@ -29,8 +29,12 @@ class ManageSportController extends Controller
 
             $pageTitle = 'Manage Sports';
 
-            $university = auth()->user()->university;
-            $university->load('sports');
+            // Fetch authenticated user's university with related sports data
+            // Eager load nested relationship to avoid N+1 queries
+            $university = auth()->user()->university()
+                ->with('sports.sport')
+                ->firstOrFail();
+
             return view('university.sports.manageSports', compact('pageTitle', 'university'));
         } catch (Exception $e) {
             return back()->with('error', 'Unable to load sports list page.');
@@ -41,11 +45,14 @@ class ManageSportController extends Controller
     {
         try {
             $pageTitle = 'Add Sport';
+
+            // Fetch all available sports (for dropdown/select options)
             $generalsports = Sport::all();
 
             return view('university.sports.addSports', compact('pageTitle', 'generalsports'));
         } catch (Exception $e) {
-            Log::error($e);
+            Log::error('Sport Add Error: ' . $e->getMessage());
+
             return back()->with('error', 'Unable to load add sport page.');
         }
     }
@@ -55,31 +62,32 @@ class ManageSportController extends Controller
     {
         $university = auth()->user()->university;
 
-        $request->validate([
-            'name' => [
-                'required',
-                'string',
-                'max:150',
-                'regex:/^[A-Za-z ]+$/',
+        $request->validate(
+            [
+                'sport_id' => [
+                    'required',
+                    'exists:sports,id',
 
-                Rule::unique('university_sports')->where(function ($q) use ($university) {
-                    return $q->where('university_id', $university->id);
-                }),
+                    // Ensure the same sport is not already assigned to this university
+                    Rule::unique('university_sports')->where(function ($q) use ($university) {
+                        return $q->where('university_id', $university->id);
+                    }),
+                ],
+                'category' => 'required|in:indoor,outdoor',
             ],
-            'category' => 'required|in:indoor,outdoor',
-        ],
-        [
-            'name.regex' => 'The name may only contain letters and spaces.',
-            'name.unique' => 'This sport already exists for your university.',
-            'name.required' => 'The Sport name field is required.',
-            'category.required' => 'The Sport category field is required',
-        ]);
+            [
+                'sport_id.required' => 'Please select a sport.',
+                'sport_id.exists' => 'Invalid sport selected.',
+                'sport_id.unique' => 'This sport is already added in your university. Please select a different one.',
+                'category.required' => 'The sport category field is required',
+            ]
+        );
         try {
 
 
             UniversitySport::create([
                 'university_id' => $university->id,
-                'name' => ucfirst($request->name),
+                'sport_id' => $request->sport_id,
                 'category' => $request->category,
             ]);
 
@@ -99,8 +107,11 @@ class ManageSportController extends Controller
     {
         try {
             $pageTitle = 'Edit Sport';
+
+            // Fetch all available sports (for dropdown/select options)
             $generalsports = Sport::all();
 
+            // Fetch sport record ensuring it belongs to the current university
             $sport = UniversitySport::where('id', $id)
                 ->where('university_id', auth()->user()->university->id)
                 ->firstOrFail();
@@ -108,6 +119,7 @@ class ManageSportController extends Controller
             return view('university.sports.editSport', compact('sport', 'pageTitle', 'generalsports'));
 
         } catch (\Exception $e) {
+            Log::error('Sport Edit Error: ' . $e->getMessage());
             return redirect()
                 ->route('university.sport.list')
                 ->with('error', 'Unauthorized or sport not found.');
@@ -117,28 +129,31 @@ class ManageSportController extends Controller
 
     public function update(Request $request, $id)
     {
+        $university = auth()->user()->university;
+
         // Validation
-        $request->validate([
-            'name' => [
-                'required',
-                'string',
-                'max:150',
-                'regex:/^[A-Za-z ]+$/',
-                Rule::unique('university_sports')
-                    ->where(
-                        fn($q) =>
-                        $q->where('university_id', auth()->user()->university->id)
-                    )
-                    ->ignore($id),
+        $request->validate(
+            [
+                'sport_id' => [
+                    'required',
+                    'exists:sports,id',
+                    
+                    // Ensure sport is unique per university (ignore current record)
+                    Rule::unique('university_sports')
+                        ->where(function ($q) use ($university) {
+                            return $q->where('university_id', $university->id);
+                        })
+                        ->ignore($id),
+                ],
+                'category' => 'required|in:indoor,outdoor',
             ],
-            'category' => 'required|in:indoor,outdoor',
-        ],
-        [
-            'name.regex' => 'The name may only contain letters and spaces.',
-            'name.unique' => 'This sport already exists for your university.',
-            'name.required' => 'The Sport name field is required.',
-            'category.required' => 'The Sport category field is required',
-        ]);
+            [
+                'sport_id.required' => 'Please select a sport.',
+                'sport_id.exists' => 'Invalid sport selected.',
+                'sport_id.unique' => 'This sport is already added in your university. Please select a different one.',
+                'category.required' => 'The sport category field is required',
+            ]
+        );
 
         try {
 
@@ -148,7 +163,7 @@ class ManageSportController extends Controller
                 ->firstOrFail();
             // Update
             $sport->update([
-                'name' => $request->name,
+                'sport_id' => $request->sport_id,
                 'category' => $request->category,
             ]);
 

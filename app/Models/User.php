@@ -47,6 +47,11 @@ class User extends Authenticatable
         return $this->hasOne(Athlete::class);
     }
 
+    public function videoLikes()
+    {
+        return $this->hasMany(VideoLike::class, 'user_id');
+    }
+
     /**
      * The attributes that should be hidden for serialization.
      *

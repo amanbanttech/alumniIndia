@@ -37,5 +37,10 @@ class Sport extends Model
         return $this->hasMany(AthleteSportDetail::class, 'primary_sport_id');
     }
 
+    public function sports()
+    {
+        return $this->hasMany(UniversitySport::class);
+    }
+
 
 }

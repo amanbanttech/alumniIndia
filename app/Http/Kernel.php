@@ -66,6 +66,8 @@ class Kernel extends HttpKernel
         'is_admin' => \App\Http\Middleware\is_admin::class,
         'is_university' => \App\Http\Middleware\is_university::class,
         'is_athlete' => \App\Http\Middleware\is_athlete::class,
+        'is_mentor' => \App\Http\Middleware\is_mentor::class,
+
         'roleRedirect' => \App\Http\Middleware\RoleRedirect::class,
 
 

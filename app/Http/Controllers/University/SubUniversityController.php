@@ -34,6 +34,7 @@ class SubUniversityController extends Controller
 
             $university = Auth::user()->university;
 
+            // Fetch all sub-universities for the current university, including their related user data.
             $subUniversities = SubUniversity::with('user')
                 ->where('university_id', $university->id)
                 ->orderBy('id', 'desc')
@@ -189,10 +190,12 @@ class SubUniversityController extends Controller
             'mobile' => 'required|digits:10|unique:users,phoneNumber',
             'email' => 'required|email|unique:users,email',
             'otp' => 'required|digits:6',
-        ],[
-            'name.regex' => 'Name should contain only letters and spaces.',
+        ], [
+            'name.regex' => 'The sub-university admin name may only contain letters and spaces.',
             'name.required' => 'The sub-university admin name field is required.',
         ]);
+
+        // Ensure mobile number is verified via session before proceeding.
 
         if (
             !session()->has('verified_registration_phone') ||
@@ -222,15 +225,17 @@ class SubUniversityController extends Controller
 
             DB::commit();
 
-            Mail::send('email.SubUniversityRegister', [
+            Mail::send('email.subUniversityRegister', [
                 'name' => $user->name,
                 'email' => $user->email,
                 'phone' => $user->phoneNumber,
+                'loginUrl' => route('subUniversity.login.view'),
             ], function ($message) use ($user) {
                 $message->to($user->email);
-                $message->subject('Sub-University Registration Successful');
+                $message->subject('Sub-University Account Created Successfully');
             });
 
+            // Clear verified session data after successful registration
             session()->forget('verified_registration_phone');
 
             return redirect()->route('university.subUniversity.list')->with('success', 'Sub-University Admin added successfully');
@@ -248,10 +253,10 @@ class SubUniversityController extends Controller
         try {
             $pageTitle = 'Edit Sub-University Admin';
 
-            $subUniversity = SubUniversity::with('user')
-                ->where('id', $id)
-                ->where('university_id', Auth::user()->university->id) 
-                ->firstOrFail();
+            $subUniversity = Auth::user()->university
+                ->subUniversities()
+                ->with('user')
+                ->findOrFail($id);
 
             return view(
                 'university.subUniversity.editSubUniversity',
@@ -266,18 +271,31 @@ class SubUniversityController extends Controller
 
     public function update(Request $request, $id)
     {
-        $subUniversity = SubUniversity::with('user')
-            ->where('id', $id)
-            ->where('university_id', Auth::user()->university->id)
-            ->firstOrFail();
+        $subUniversity = Auth::user()->university
+            ->subUniversities()
+            ->with('user')
+            ->findOrFail($id);
+
         $request->validate([
             'name' => 'required|string|max:255|regex:/^[A-Za-z ]+$/',
             'email' => 'required|email|unique:users,email,' . $subUniversity->user->id,
-            'mobile' => 'required|digits:10|unique:users,phoneNumber,' . $subUniversity->user->id
+            'mobile' => 'required|digits:10|unique:users,phoneNumber,' . $subUniversity->user->id,
+            // 'otp_verified' => 'required|in:1',
         ], [
-            'name.regex' => 'Name should contain only letters and spaces.',
+            'name.regex' => 'The sub-university admin name may only contain letters and spaces.',
             'name.required' => 'The sub-university admin name field is required.',
+            // 'otp_verified.in' => 'Please verify mobile number before updating.',
         ]);
+
+        // Check if mobile number is changed and ensure OTP verification
+        if ($request->mobile != $subUniversity->user->phoneNumber) {
+
+            if ($request->otp_verified != 1) {
+                return back()
+                    ->withErrors(['otp_verified' => 'Please verify mobile number before updating.'])
+                    ->withInput();
+            }
+        }
 
         DB::beginTransaction();
 

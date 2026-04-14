@@ -13,6 +13,7 @@ use App\Models\AthleteDocument;
 use App\Models\DiplomaStream;
 use App\Models\Sport;
 use App\Models\TwelfthStream;
+use App\Models\Nationality;
 use App\Models\Athlete;
 use App\Models\AthleteAcademicDetail;
 use App\Models\AthleteSportDetail;
@@ -23,6 +24,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rule;
 
 class AthleteProfileController extends Controller
 {
@@ -46,8 +48,9 @@ class AthleteProfileController extends Controller
         $sports = Sport::all();
 
         $degrees = Degree::all();
+        $nationalities = Nationality::orderBy('nationality')->get();
 
-        return view('athlete.athleteProfile.athleteProfile', compact('user', 'athlete', 'states', 'boards', 'diplomaBoards', 'diplomaStreams', 'twelfthStreams', 'degrees', 'sports', 'pageTitle'));
+        return view('athlete.athleteProfile.athleteProfile', compact('user', 'athlete', 'states', 'boards', 'diplomaBoards', 'diplomaStreams', 'twelfthStreams', 'degrees', 'sports', 'pageTitle', 'nationalities'));
     }
 
 
@@ -59,8 +62,9 @@ class AthleteProfileController extends Controller
 
 
         $user = Auth::user();
-        $athlete = Athlete::where('user_id', $user->id)->first();
-
+        $athlete = Athlete::with('document')
+            ->where('user_id', $user->id)
+            ->first();
         /* ================= STEP 1 ================= */
         if ($request->ajax() && $request->step == 1) {
 
@@ -72,7 +76,7 @@ class AthleteProfileController extends Controller
                 'mobile' => 'required|digits:10',
                 'dob' => 'required|date|before:today',
                 'gender' => 'required',
-                'nationality' => 'required|regex:/^[a-zA-Z\s]+$/',
+                'nationality_id' => 'required|exists:nationalities,id',
                 'address' => 'required',
                 'athlete_profile' => 'nullable|file|mimes:jpg,jpeg,png,webp|max:2048',
                 'city' => 'required',
@@ -80,9 +84,12 @@ class AthleteProfileController extends Controller
                 'state_id' => 'required',
 
             ], [
-                'state_id.required' => 'The state field is required',
-                'name.regex' => 'The name should contain only letters and spaces.',
-                'nationality.regex' => 'The nationality should contain only letters and spaces.',
+                'state_id.required' => 'The state field is required.',
+                'name.required' => 'The full name field is required.',
+                'name.regex' => 'The full name should contain only letters and spaces.',
+                'nationality_id.exists' => 'The selected nationality is invalid.',
+                'nationality_id.required' => 'The nationality field is required.',
+
 
 
             ]);
@@ -144,7 +151,7 @@ class AthleteProfileController extends Controller
                     'name' => $request->name,
                     'date_of_birth' => $request->dob,
                     'gender' => $request->gender,
-                    'nationality' => $request->nationality,
+                    'nationality_id' => $request->nationality_id,
                     'address' => $request->address,
                     'city' => $request->city,
                     'zip_code' => $request->zip_code,
@@ -211,8 +218,8 @@ class AthleteProfileController extends Controller
                     }
                 ],
                 'tenth_marksheet' => $athlete->academicDetail?->tenth_marksheet
-                    ? 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120'
-                    : 'required|image|mimes:jpg,jpeg,png,webp|max:5120',
+                    ? 'nullable|file|mimes:jpg,jpeg,doc,docx,png,webp|max:5120'
+                    : 'required|file|mimes:jpg,jpeg,doc,docx,png,webp|max:5120',
 
 
                 // ========== 12th ==========
@@ -241,7 +248,7 @@ class AthleteProfileController extends Controller
                         }
                     }
                 ],
-                'twelfth_marksheet' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
+                'twelfth_marksheet' => 'nullable|file|mimes:jpg,jpeg,doc,docx,png,webp|max:5120',
 
 
                 // Diploma
@@ -270,7 +277,7 @@ class AthleteProfileController extends Controller
                         }
                     }
                 ],
-                'diploma_marksheet' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
+                'diploma_marksheet' => 'nullable|file|mimes:jpg,jpeg,doc,docx,png,webp|max:5120',
 
 
                 // ========== Graduation (Optional) ==========
@@ -299,27 +306,30 @@ class AthleteProfileController extends Controller
                         }
                     }
                 ],
-                'graduation_marksheet' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
+                'graduation_marksheet' => 'nullable|file|mimes:jpg,jpeg,doc,docx,png,webp|max:5120',
 
             ], [
-                'tenth_board_id.required' => 'Tenth board is required',
-                'twelfth_board_id.required' => 'Twelfth board is required',
-                'twelfth_stream_id.required' => 'Twelfth stream is required',
-                'diploma_board_id.required' => 'Diploma board is required',
-                'diploma_stream_id.required' => 'Diploma stream is required',
-                'degree_id.required' => 'Degree is required',
+                'tenth_board_id.required' => 'Board field is required.',
+                'twelfth_board_id.required' => 'Board field is required.',
+                'twelfth_stream_id.required' => 'Twelfth stream is required.',
+                'diploma_board_id.required' => 'Diploma board is required.',
+                'diploma_stream_id.required' => 'Diploma stream is required.',
+                'degree_id.required' => 'Degree is required.',
                 'school_name.regex' => 'The school name should contain only letters and spaces.',
                 'twelfth_school_name.regex' => 'The school name should contain only letters and spaces.',
                 'diploma_college_name.regex' => 'The college name should contain only letters and spaces.',
                 'graduation_university.regex' => 'The college name should contain only letters and spaces.',
                 'specialization.regex' => 'The specialization should contain only letters and spaces.',
-                'tenth_year.integer' => 'The year of passing must be a integer',
-                'tenth_result_type.required' => 'The result type field is required',
-                'tenth_result.required' => 'Please select result type first',
+                'tenth_year.integer' => 'The year of passing must be a integer.',
+                'tenth_result_type.required' => 'The result type field is required.',
+                'tenth_result.required' => 'Please select result type first.',
                 'tenth_year.min' => 'Year of passing cannot be less than 1975.',
-                'tenth_year.max' => 'Year of passing must not be greater than 2026',
+                'tenth_year.max' => 'Year of passing must not be greater than 2026.',
                 'twelfth_year.min' => 'Year of passing cannot be less than 1975.',
-                'twelfth_year.max' => 'Year of passing must not be greater than 2026',
+                'twelfth_year.max' => 'Year of passing must not be greater than 2026.',
+                'tenth_year.required' => 'The year of passing field is required.',
+                'tenth_marksheet.required' => 'Certificate field is required.',
+
 
 
 
@@ -356,7 +366,7 @@ class AthleteProfileController extends Controller
 
                     $img = $request->file('tenth_marksheet');
 
-                    $imageName = time() . '.' . $img->getClientOriginalExtension();
+                    $imageName = $img->getClientOriginalName();
 
                     $img->move(
                         public_path('athlete_assets/10_marksheet/'),
@@ -376,7 +386,7 @@ class AthleteProfileController extends Controller
 
                     $img = $request->file('twelfth_marksheet');
 
-                    $twelfthImage = time() . '.' . $img->getClientOriginalExtension();
+                    $twelfthImage = $img->getClientOriginalName();
 
                     $img->move(
                         public_path('athlete_assets/12_marksheet/'),
@@ -397,7 +407,7 @@ class AthleteProfileController extends Controller
 
                     $img = $request->file('diploma_marksheet');
 
-                    $diplomaImage = time() . '.' . $img->getClientOriginalExtension();
+                    $diplomaImage = $img->getClientOriginalName();
 
                     $img->move(
                         public_path('athlete_assets/diploma_marksheet/'),
@@ -419,7 +429,7 @@ class AthleteProfileController extends Controller
 
                     $img = $request->file('graduation_marksheet');
 
-                    $graduationImage = time() . '.' . $img->getClientOriginalExtension();
+                    $graduationImage = $img->getClientOriginalName();
 
                     $img->move(
                         public_path('athlete_assets/graduation_marksheet/'),
@@ -505,8 +515,21 @@ class AthleteProfileController extends Controller
 
         if ($request->ajax() && $request->step == 3) {
 
+            if ($request->previous_injury === 'No') {
 
+                // Delete old medical file
+                $medical_certificate = optional($athlete->sportDetail)->medical_certificate;
+                if ($medical_certificate && file_exists(public_path('athlete_assets/medical_certificate/' . $medical_certificate))) {
+                    unlink(public_path('athlete_assets/medical_certificate/' . $medical_certificate));
+                }
 
+                $medical_certificate = null;
+
+                $request->merge([
+                    'injury_details' => null,
+                    'recovery_status' => null,
+                ]);
+            }
 
             /* 🔹 Validation */
             $validator = Validator::make($request->all(), [
@@ -542,19 +565,23 @@ class AthleteProfileController extends Controller
                 'silver_medal' => 'nullable|string',
 
                 'previous_injury' => 'required|in:Yes,No',
-                'injury_details' => 'required_if:previous_injury,Yes|string|min:20|max:1000',
-                'recovery_status' => 'required_if:previous_injury,Yes|string|max:255',
-                'medical_certificate' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
+                'injury_details' => [
+                    Rule::when($request->previous_injury === 'Yes', ['required', 'string', 'min:20', 'max:1000'], ['nullable']),
+                ],
+                'recovery_status' => [
+                    Rule::when($request->previous_injury === 'Yes', ['required', 'string', 'max:255'], ['nullable']),
+                ],
+                'medical_certificate' => 'nullable|file|mimes:jpg,jpeg,doc,docx,png,webp|max:5120',
 
 
-                'coach_certificate' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
-                'sport_card' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
+                'coach_certificate' => 'nullable|file|mimes:jpg,jpeg,doc,docx,png,webp|max:5120',
+                'sport_card' => 'nullable|file|mimes:jpg,jpeg,doc,docx,png,webp|max:5120',
 
 
 
 
             ], [
-                'primary_sport_id.required' => 'The primary sport is required',
+                'primary_sport_id.required' => 'The primary sport is required.',
                 'academy.regex' => 'The academy should contain only letters and spaces.',
                 'training_experience.numeric' => 'The training/experience should contain numbers only.',
                 'coach_name.regex' => 'The coach name should contain only letters and spaces.',
@@ -564,26 +591,12 @@ class AthleteProfileController extends Controller
                 'chest.numeric' => 'The chest should contain numbers only.',
                 'waist.numeric' => 'The waist should contain numbers only.',
                 'body_fat.numeric' => 'The body fat should contain numbers only.',
-                'training_experience.required' => 'The training/experience field is required',
+                'training_experience.required' => 'The training/experience field is required.',
 
 
 
             ]);
-            if ($request->previous_injury === 'No') {
 
-                // Delete old medical file
-                $medical_certificate = optional($athlete->sportDetail)->medical_certificate;
-                if ($medical_certificate && file_exists(public_path('athlete_assets/medical_certificate/' . $medical_certificate))) {
-                    unlink(public_path('athlete_assets/medical_certificate/' . $medical_certificate));
-                }
-
-                $medical_certificate = null;
-
-                $request->merge([
-                    'injury_details' => null,
-                    'recovery_status' => null,
-                ]);
-            }
 
 
 
@@ -611,7 +624,7 @@ class AthleteProfileController extends Controller
 
                     $img = $request->file('sport_card');
 
-                    $sport_card = time() . '.' . $img->getClientOriginalExtension();
+                    $sport_card = $img->getClientOriginalName();
 
                     $img->move(
                         public_path('athlete_assets/sport_card/'),
@@ -631,7 +644,7 @@ class AthleteProfileController extends Controller
 
                     $img = $request->file('coach_certificate');
 
-                    $coach_certificate = time() . '.' . $img->getClientOriginalExtension();
+                    $coach_certificate = $img->getClientOriginalName();
 
                     $img->move(
                         public_path('athlete_assets/coach_certificate/'),
@@ -651,7 +664,7 @@ class AthleteProfileController extends Controller
 
                     $img = $request->file('medical_certificate');
 
-                    $medical_certificate = time() . '.' . $img->getClientOriginalExtension();
+                    $medical_certificate = $img->getClientOriginalName();
 
                     $img->move(
                         public_path('athlete_assets/medical_certificate/'),
@@ -755,21 +768,21 @@ class AthleteProfileController extends Controller
                     : 'required|image|mimes:jpg,jpeg,png,webp|max:5120',
 
                 'government_proof' => $athlete->document?->government_proof
-                    ? 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120'
-                    : 'required|image|mimes:jpg,jpeg,png,webp|max:5120',
+                    ? 'nullable|file|mimes:jpg,doc,docx,jpeg,png,webp|max:5120'
+                    : 'required|file|mimes:jpg,doc,docx,jpeg,png,webp|max:5120',
                 'dob_proof' => $athlete->document?->dob_proof
-                    ? 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120'
-                    : 'required|image|mimes:jpg,jpeg,png,webp|max:5120',
+                    ? 'nullable|file|mimes:jpg,jpeg,doc,docx,png,webp|max:5120'
+                    : 'required|file|mimes:jpg,jpeg,doc,docx,png,webp|max:5120',
                 'address_proof' => $athlete->document?->address_proof
-                    ? 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120'
-                    : 'required|image|mimes:jpg,jpeg,png,webp|max:5120',
+                    ? 'nullable|file|mimes:jpg,jpeg,doc,docx,png,webp|max:5120'
+                    : 'required|file|mimes:jpg,jpeg,doc,docx,png,webp|max:5120',
 
-                'sport_achievement' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
-                'coach_recommendation' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
+                'sport_achievement' => 'nullable|file|mimes:jpg,jpeg,doc,docx,png,webp|max:5120',
+                'coach_recommendation' => 'nullable|file|mimes:jpg,jpeg,doc,docx,png,webp|max:5120',
                 'medical_fitness' => $athlete->document?->medical_fitness
-                    ? 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120'
-                    : 'required|image|mimes:jpg,jpeg,png,webp|max:5120',
-                'player_contract' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
+                    ? 'nullable|file|mimes:jpg,jpeg,doc,docx,png,webp|max:5120'
+                    : 'required|file|mimes:jpg,jpeg,doc,docx,png,webp|max:5120',
+                'player_contract' => 'nullable|file|mimes:jpg,jpeg,doc,docx,png,webp|max:5120',
 
                 'reference_name1' => 'nullable|string|max:255|regex:/^[a-zA-Z\s]+$/',
                 'reference_role1' => 'nullable|in:Coach,Trainer,Teacher,Sports officials',
@@ -777,7 +790,7 @@ class AthleteProfileController extends Controller
                 'reference_relationship1' => 'nullable|string|max:255|regex:/^[a-zA-Z\s]+$/',
                 'reference_number1' => 'nullable|regex:/^[0-9]+$/',
                 'reference_email1' => 'nullable|email',
-                'reference_document1' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
+                'reference_document1' => 'nullable|file|mimes:jpg,jpeg,doc,docx,png,webp|max:5120',
 
 
                 'reference_name2' => 'nullable|string|max:255|regex:/^[a-zA-Z\s]+$/',
@@ -786,7 +799,7 @@ class AthleteProfileController extends Controller
                 'reference_relationship2' => 'nullable|string|max:255|regex:/^[a-zA-Z\s]+$/',
                 'reference_number2' => 'nullable|regex:/^[0-9]+$/',
                 'reference_email2' => 'nullable|email',
-                'reference_document2' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
+                'reference_document2' => 'nullable|file|mimes:jpg,jpeg,doc,docx,png,webp|max:5120',
 
 
 
@@ -803,6 +816,11 @@ class AthleteProfileController extends Controller
                 'reference_number2.regex' => 'The reference number should contain only numbers.',
                 'reference_email1.email' => 'The reference email address should be a valid email address.',
                 'reference_email2.email' => 'The reference email address should be a valid email address.',
+                'profile_photo.required' => 'Profile photo field is required.',
+                'government_proof.required' => 'Government id proof field is required.',
+                'dob_proof.required' => 'Date of birth proof field is required.',
+                'address_proof.required' => 'Address proof field is required.',
+                'medical_fitness.required' => 'Medical fitness certificate field is required.',
 
 
 
@@ -852,7 +870,7 @@ class AthleteProfileController extends Controller
 
                     $img = $request->file('government_proof');
 
-                    $govProof = time() . '.' . $img->getClientOriginalExtension();
+                    $govProof = $img->getClientOriginalName();
 
                     $img->move(
                         public_path('athlete_assets/athlete_documents/'),
@@ -872,7 +890,7 @@ class AthleteProfileController extends Controller
 
                     $img = $request->file('dob_proof');
 
-                    $dobProof = time() . '.' . $img->getClientOriginalExtension();
+                    $dobProof = $img->getClientOriginalName();
 
                     $img->move(
                         public_path('athlete_assets/athlete_documents/'),
@@ -892,7 +910,7 @@ class AthleteProfileController extends Controller
 
                     $img = $request->file('address_proof');
 
-                    $addressProof = time() . '.' . $img->getClientOriginalExtension();
+                    $addressProof = $img->getClientOriginalName();
 
                     $img->move(
                         public_path('athlete_assets/athlete_documents/'),
@@ -912,7 +930,7 @@ class AthleteProfileController extends Controller
 
                     $img = $request->file('sport_achievement');
 
-                    $sportAchieve = time() . '.' . $img->getClientOriginalExtension();
+                    $sportAchieve = $img->getClientOriginalName();
 
                     $img->move(
                         public_path('athlete_assets/athlete_documents/'),
@@ -932,7 +950,7 @@ class AthleteProfileController extends Controller
 
                     $img = $request->file('coach_recommendation');
 
-                    $coachRecomend = time() . '.' . $img->getClientOriginalExtension();
+                    $coachRecomend = $img->getClientOriginalName();
 
                     $img->move(
                         public_path('athlete_assets/athlete_documents/'),
@@ -952,7 +970,7 @@ class AthleteProfileController extends Controller
 
                     $img = $request->file('medical_fitness');
 
-                    $medicalFitness = time() . '.' . $img->getClientOriginalExtension();
+                    $medicalFitness = $img->getClientOriginalName();
 
                     $img->move(
                         public_path('athlete_assets/athlete_documents/'),
@@ -973,7 +991,7 @@ class AthleteProfileController extends Controller
 
                     $img = $request->file('player_contract');
 
-                    $playerContract = time() . '.' . $img->getClientOriginalExtension();
+                    $playerContract = $img->getClientOriginalName();
 
                     $img->move(
                         public_path('athlete_assets/athlete_documents/'),
@@ -993,7 +1011,7 @@ class AthleteProfileController extends Controller
 
                     $img = $request->file('reference_document1');
 
-                    $reference1 = time() . '.' . $img->getClientOriginalExtension();
+                    $reference1 = $img->getClientOriginalName();
 
                     $img->move(
                         public_path('athlete_assets/athlete_documents/'),
@@ -1013,7 +1031,7 @@ class AthleteProfileController extends Controller
 
                     $img = $request->file('reference_document2');
 
-                    $reference2 = time() . '.' . $img->getClientOriginalExtension();
+                    $reference2 = $img->getClientOriginalName();
 
                     $img->move(
                         public_path('athlete_assets/athlete_documents/'),
@@ -1077,6 +1095,5 @@ class AthleteProfileController extends Controller
             ]);
         }
 
-        abort(404);
     }
 }

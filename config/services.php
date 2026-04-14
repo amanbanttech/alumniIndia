@@ -31,4 +31,15 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'bunny' => [
+        'storage_zone' => env('BUNNY_STORAGE_ZONE'),
+        'api_key' => env('BUNNY_API_KEY'),
+        'region' => env('BUNNY_REGION', 'storage'),
+        'base_url' => env('BUNNY_BASE_URL'),
+    ],
+
+    'ffmpeg' => [
+        'binary' => env('FFMPEG_BINARIES'),
+    ],
+
 ];

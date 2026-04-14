@@ -160,10 +160,13 @@ class AthleteRegisterController extends Controller
 
 
         $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|max:255|regex:/^[a-zA-Z\s]+$/',
             'mobile' => 'required|digits:10|unique:users,phoneNumber',
             'email' => 'required|email|unique:users,email',
             'otp' => 'required|digits:6',
+        ], [
+            'name.regex' => 'The name should contain only letters and spaces.',
+            'name.required' => 'The full name field is required',
         ]);
 
         if (
@@ -185,24 +188,28 @@ class AthleteRegisterController extends Controller
                 'phoneNumber' => $request->mobile,
             ]);
 
-            $user->athlete()->create([
-                'name' => $user->name
+            $athlete = $user->athlete()->create([
+                'name' => $user->name,
             ]);
+            $athlete->athlete_id = 'ATH-' . $athlete->id;
+            $athlete->save();
 
             DB::commit();
 
-            Mail::send('email.SubUniversityRegister', [
+            Mail::send('email.athleteRegister', [
                 'name' => $user->name,
                 'email' => $user->email,
                 'phone' => $user->phoneNumber,
+                'loginUrl' => route('athlete.login.view'),
+
             ], function ($message) use ($user) {
                 $message->to($user->email);
-                $message->subject('Sub-University Registration Successful');
+                $message->subject('Athlete Registration Successfull');
             });
 
             session()->forget('verified_registration_phone');
 
-            return redirect()->route('athlete.login.view')->with('success', 'Athlete added successfully');
+            return redirect()->route('athlete.login.view')->with('success', 'Athlete registered successfully.');
 
         } catch (\Exception $e) {
             DB::rollBack();

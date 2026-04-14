@@ -3,6 +3,16 @@
 @section('content')
     <div class="content-wrapper">
          <div class="commmon-crads">
+            <div id="formMessage" class="alert d-none"></div>
+
+
+                            @if (session('success'))
+                                <div class="alert alert-success">{{ session('success') }}</div>
+                            @endif
+
+                            @if (session('error'))
+                                <div class="alert alert-danger">{{ session('error') }}</div>
+                            @endif
 
             <div class="row">
                 <div class="col-xxl">
@@ -15,16 +25,7 @@
 </div>
                         {{-- Body --}}
                         <div class="card-body">
-                            <div id="formMessage" class="alert d-none"></div>
-
-
-                            @if (session('success'))
-                                <div class="alert alert-success">{{ session('success') }}</div>
-                            @endif
-
-                            @if (session('error'))
-                                <div class="alert alert-danger">{{ session('error') }}</div>
-                            @endif
+                            
 
                             <form action="{{ route('admin.university.store') }}" method="POST"
                                 enctype="multipart/form-data">
@@ -148,16 +149,17 @@
                                      <label class="col-sm-12 col-form-label">State <span class="text-danger">*</span></label>
                                     <div class="col-sm-12 select-wrapper">
                                         <select name="state_id" id="state_id" class="form-select">
-                                            <option value="">Select State</option>
+                                            <option value="">Select state</option>
                                             @foreach ($states as $state)
                                                 <option value="{{ $state->id }}" {{ old('state_id') == $state->id ? 'selected' : '' }}>{{ $state->name }}</option>
                                             @endforeach
                                         </select>
                                          <i class="fa fa-chevron-down select-icon"></i>
-                                        @error('state_id')
+                                        
+                                    </div>
+                                    @error('state_id')
                                             <div class="text-danger">{{ $message }}</div>
                                         @enderror
-                                    </div>
                                    </div>
                                 </div>
 
@@ -167,13 +169,15 @@
                                         <label class="col-sm-12 col-form-label">Emblem Logo</label>
                                     <div class="col-sm-12">
                                        
-                                        <input type="file" name="emblem_logo" class="form-control"
+                                       <div>
+                                         <input type="file" name="emblem_logo" class="form-control" accept="image/webp,image/jpeg,image/png,image/jpg"
                                             onchange="previewImage(this,'emblemPreview')">
                                         <small class="text-allows">
-                                            Allowed formats: WEBP. Max size: 200px X 200px.
+                                            Only WEBP format is allowed. Maximum image size: 200 X 200 pixels.
                                         </small>
-                                      <img id="emblemPreview" src="https://via.placeholder.com/120"
-                                            class="d-block mb-2 rounded previews" width="120" height="120">
+                                       </div>
+                                      <img id="emblemPreview" 
+                                            class="d-none mb-2 rounded previews" width="120" height="120">
                                         @error('emblem_logo')
                                             <div class="text-danger ">{{ $message }}</div>
                                         @enderror
@@ -183,13 +187,15 @@
                                 <div class="col-md-6">
                                     <label class="col-sm-12 col-form-label">Sports Logo</label>
                                     <div class="col-sm-12">
-                                       
-                                        <input type="file" name="sports_logo" class="form-control"
+                                       <div>
+                                         <input type="file" name="sports_logo" class="form-control" accept="image/webp,image/jpeg,image/png,image/jpg"
                                             onchange="previewImage(this,'sportsPreview')">
                                         <small class="text-allows">
-                                            Allowed formats: WEBP. Max size: 200px X 200px.
-                                        </small> <img id="sportsPreview" src="https://via.placeholder.com/120"
-                                            class="d-block mb-2 rounded previews" width="120" height="120">
+                                            Only WEBP format is allowed. Maximum image size: 200 X 200 pixels.
+                                        </small> 
+                                       </div>
+                                       <img id="sportsPreview" 
+                                            class="d-none mb-2 rounded previews" width="120" height="120">
                                         @error('sports_logo')
                                             <div class="text-danger ">{{ $message }}</div>
                                         @enderror
@@ -201,8 +207,8 @@
                                 {{-- Submit --}}
                                 <div class="row justify-content-end">
                                     <div class="col-sm-12">
-                                        <button type="submit" class="btn btn-add-univerity">
-                                            Add University
+                                        <button type="submit" class="btn btn-add-univerity" id="submitBtn">
+                                            <span id="btnText">Add University</span>
                                         </button>
                                     </div>
                                 </div>
@@ -217,15 +223,50 @@
         </div>
     </div>
 
-    <script>
-        function previewImage(input, previewId) {
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = e => document.getElementById(previewId).src = e.target.result;
-                reader.readAsDataURL(input.files[0]);
+<script>
+function previewImage(input, previewId) {
+
+    const file = input.files[0];
+    const preview = document.getElementById(previewId);
+
+    // Agar file hi nahi hai
+    if (!file) {
+        preview.src = "";
+        preview.classList.add("d-none");
+        return;
+    }
+
+
+
+    const reader = new FileReader();
+
+    reader.onload = function (e) {
+
+        const img = new Image();
+
+        img.onload = function () {
+
+            // Max size check
+            if (img.width > 200 || img.height > 200) {
+
+                alert("Image size must be maximum 200 × 200 pixels.");
+
+                input.value = "";
+
+                return;
             }
-        }
-    </script>
+
+            // Show only this preview
+            preview.src = e.target.result;
+            preview.classList.remove("d-none");
+        };
+
+        img.src = e.target.result;
+    };
+
+    reader.readAsDataURL(file);
+}
+</script>
 
     <script>
         function clearError() {
@@ -237,11 +278,6 @@
                 box.classList.remove('alert-success', 'alert-danger');
                 box.innerText = '';
             }
-
-            // Field validation errors clear
-            // document.querySelectorAll('.field-error').forEach(el => {
-            //     el.remove();
-            // });
         }
     </script>
 
@@ -392,6 +428,41 @@
         });
     </script>
 
+<script>
+   document.querySelector("form").addEventListener("submit", function (e) {
+    e.preventDefault();
 
+    let form = this;
+    let formData = new FormData(form);
+
+    let btn = document.getElementById("submitBtn");
+    let btnText = document.getElementById("btnText");
+
+    // 🔥 START PROCESSING
+    btn.disabled = true;
+    btnText.innerText = "Processing...";
+
+    fetch(form.action, {
+        method: "POST",
+        headers: {
+            "X-CSRF-TOKEN": "{{ csrf_token() }}"
+        },
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status) {
+            window.location.href = data.redirect + '?success=' + encodeURIComponent(data.message);
+        }
+    })
+    .catch(err => {
+        console.log(err);
+
+        // ❌ ERROR → RESET BUTTON
+        btn.disabled = false;
+        btnText.innerText = "Add University";
+    });
+});
+</script>
 
 @endsection

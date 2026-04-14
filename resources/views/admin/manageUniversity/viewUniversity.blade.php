@@ -65,7 +65,7 @@
                                     <div class="info-row">
                                         <span class="info-label">State</span>
                                         <span class="info-value">
-                                            {{ $university->states->first()->name ?? 'N/A' }}
+                                            {{ $university->state->name ?? 'N/A' }}
                                         </span>
                                     </div>
                                 </div>

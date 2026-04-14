@@ -2,7 +2,6 @@
 
 
 use Illuminate\Support\Facades\Route;
-
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -15,11 +14,16 @@ use Illuminate\Support\Facades\Route;
 */
 Route::get('/', function () {
     return view('frontend.index');
-});
+})->name('frontend.index');
+
+
 
 require __DIR__ . '/admin.php';
 require __DIR__ . '/university.php';
 require __DIR__ . '/athlete.php';
+require __DIR__ . '/subUniversity.php';
+require __DIR__ . '/mentor.php';
+require __DIR__ . '/frontend.php';
 
 
 

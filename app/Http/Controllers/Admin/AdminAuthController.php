@@ -12,12 +12,19 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Mail;
 use Carbon\Carbon;
 use Exception;
+use Illuminate\Support\Facades\Log;
 
 class AdminAuthController extends Controller
 {
     public function loginView()
     {
-        return view('admin.auth.login');
+        try {
+            return view('admin.auth.login');
+        } catch (Exception $e) {
+            Log::error('Failed to open login page: ' . $e->getMessage());
+
+            return back()->withInput()->with('error', 'Something went wrong! Please try again.');
+        }
     }
 
 
@@ -38,15 +45,23 @@ class AdminAuthController extends Controller
 
 
             if (Auth::attempt($credentials)) {
+                $user = Auth::user();
+
+                //  Account deactivate check
+                if ($user->account_status == 0) {
+                    Auth::logout();
+                    return redirect()->back()->with('error', 'Your account is deactivated. Please contact admin.');
+                }
+
                 if (Auth::user()->role_id == '1') {
                     return redirect()->route('admin.dashboard');
                 } else {
                     Auth::logout();
-                    return redirect()->back()->with('error', 'login failed. Please check your email and password.');
+                    return redirect()->back()->with('error', 'login failed. Please enter valid login credentials.');
                 }
             }
 
-            return redirect()->back()->withInput()->with('error', 'Login failed. Please check your email and password.');
+            return redirect()->back()->withInput()->with('error', 'Login failed. Please enter valid login credentials.');
         } catch (Exception $e) {
             // dd($e->getMessage());
             return back()->withInput()->with('error', 'Something went wrong! Please try again.');
@@ -68,10 +83,14 @@ class AdminAuthController extends Controller
         }
     }
 
-    // Forgot Password View
     public function forgotPasswordView()
     {
-        return view('admin.auth.forgotPassword');
+        try {
+            return view('admin.auth.forgotPassword');
+        } catch (Exception $e) {
+            Log::error('Failed to open forget page: ' . $e->getMessage());
+            return back()->withInput()->with('error', 'Something went wrong! Please try again.');
+        }
     }
 
     public function forgotPasswordSubmit(Request $request)
@@ -83,6 +102,8 @@ class AdminAuthController extends Controller
         ]);
 
         try {
+
+            //verify that it's admin mail or not , if not show error if than send mail.
             $user = User::where('email', $request->email)
                 ->where('role_id', 1)
                 ->first();
@@ -107,11 +128,12 @@ class AdminAuthController extends Controller
                 'email' => $user->email
             ], function ($message) use ($request) {
                 $message->to($request->email);
-                $message->subject('Reset Password');
+                $message->subject('Admin Password Reset Request');
             });
 
             return redirect()->back()->with('success', 'A password reset link has been sent to your registered email address. Please check your inbox or spam folder.');
         } catch (Exception $e) {
+            Log::error('Failed to send password reset email: ' . $e->getMessage());
             return back()->with('error', 'Failed to send password reset link.');
         }
     }
@@ -125,6 +147,7 @@ class AdminAuthController extends Controller
             return redirect()->route('admin.forgot.password.view')->with('error', 'Invalid token. Please try again.');
         }
         return view('admin.auth.resetPassword', ['token' => $token]);
+
     }
 
     public function resetPasswordSubmit(Request $request)
@@ -137,8 +160,8 @@ class AdminAuthController extends Controller
         ], [
             'password.required' => 'New Password field is required',
             'password_confirmation.required' => 'Confirm Password field is required',
-            'password_confirmation.same' => 'New Password and Confirm Password must be same',
-            'password.regex' => 'Password must have at least 8 characters and contains uppercase letters, lowercase letters, numbers, and special characters.',
+            'password_confirmation.same' => 'New Password and Confirm Password must be same.',
+            'password.regex' => 'Password must be at least 8 characters long and include uppercase letters, lowercase letters, numbers, and special characters.',
         ]);
         try {
 

@@ -8887,6 +8887,7 @@ button:focus {
   font-size: 16px;
   color: #ff3e1d;
 }
+
 .invalid-tooltip {
   position: absolute;
   top: 100%;
@@ -16332,7 +16333,7 @@ html:not(.layout-menu-fixed) .menu-inner-shadow {
 .menu-vertical .menu-block,
 .menu-vertical .menu-inner>.menu-item,
 .menu-vertical .menu-inner>.menu-header {
-  width: 19.25rem;
+  width: 18.25rem;
 }
 
 .menu-vertical .menu-inner {
@@ -16607,7 +16608,7 @@ a.menu-link i {
 }
 
 .layout-navbar.navbar-detached {
-  width: calc(100% - (1.625rem * 2));
+  width: calc(100% - (1.025rem * 2));
   margin: 0.75rem auto 0;
   border-radius: 0.375rem;
   padding: 0 1.5rem;
@@ -16647,6 +16648,61 @@ a.menu-link i {
   .layout-navbar.navbar-detached {
     width: calc(100vw - (100vw - 100%) - (1rem * 2)) !important;
   }
+}
+
+@media screen and (min-width: 1366px) and (max-width: 1440px) {
+
+  .container,
+  .container-fluid,
+  .container-sm,
+  .container-md,
+  .container-lg,
+  .container-xl,
+  .container-xxl {
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+}
+
+@media (max-width:1380px) {
+
+
+  .icon-box {
+    width: 42px;
+    height: 42px;
+  }
+
+
+
+  .div-all-boxes .card-body {
+    padding: 15px;
+  }
+}
+
+@media (max-width:768px) {
+  .commmon-crads {
+    padding: 10px;
+  }
+
+  .card-body {
+    padding: 1.5rem 1rem;
+  }
+
+  .simple-dashboard-heading i {
+    font-size: 17px;
+  }
+
+  .simple-dashboard-heading {
+    padding: 10px 16px;
+    gap: 10px;
+    font-size: 17px;
+    font-weight: 500;
+  }
+}
+
+.nav-item i.bx.bx-menu {
+  font-size: 32px;
+  color: #000;
 }
 
 .layout-menu-collapsed .layout-navbar.navbar-detached,
@@ -16693,9 +16749,45 @@ a.menu-link i {
 
   .layout-navbar .navbar-nav .nav-item.dropdown .dropdown-menu {
     position: absolute;
-    left: 0.9rem;
     min-width: auto;
-    width: 92%;
+    width: 60%;
+    right: 0;
+    left: auto;
+  }
+
+  .row.mb-3 {
+    gap: 1rem;
+  }
+
+  .simple-dashboard-heading i {
+    font-size: 18px!important;
+  }
+
+  .simple-dashboard-heading {
+    font-size: 17px !important;
+  }
+
+  .commmon-crads .toggle-password {
+    font-size: 15px !important;
+  }
+
+  .commmon-crads input,
+  .commmon-crads select,
+  .commmon-crads textarea {
+    font-size: 14px !important;
+  }
+
+  .commmon-crads label {
+    padding-bottom: 3px !important;
+  }
+
+  .commmon-crads label {
+    font-size: 15px !important;
+  }
+
+  .btn.btn-add-univerity {
+    font-size: 14px !important;
+    margin-top: 17px !important;
   }
 }
 
@@ -16744,7 +16836,7 @@ a.menu-link i {
 
   .layout-menu-fixed:not(.layout-menu-collapsed) .layout-page,
   .layout-menu-fixed-offcanvas:not(.layout-menu-collapsed) .layout-page {
-    padding-left: 19.25rem;
+    padding-left: 18.25rem;
   }
 }
 

@@ -54,7 +54,7 @@ class AthleteAuthController extends Controller
             if (!$user) {
                 return response()->json([
                     'status' => false,
-                    'message' => 'Athlete not found. Please register first.'
+                    'message' => 'Athlete record not found. Please register to continue.'
                 ], 404);
             }
 
@@ -166,41 +166,49 @@ class AthleteAuthController extends Controller
 
     public function login(Request $request)
     {
-        $request->validate(['mobile' => 'required|digits:10']);
+        $request->validate([
+            'mobile' => 'required',
+            // 'otp' => 'required',
+        ]);
 
         try {
 
-            // CRITICAL: Check session-locked phone number
             $verifiedPhone = session('verified_login_phone');
             $lockedAt = session('login_phone_locked_at');
 
-            // Check if phone was verified in last 5 minutes
+            if (!$verifiedPhone || !$lockedAt) {
+                return redirect()
+                    ->route('athlete.login.view')
+                    ->with('error', 'Please verify your mobile number first.')
+                    ->withInput();
+            }
+            // ✅ Check if verified and not expired (5 min)
             if (!$verifiedPhone || !$lockedAt || (now()->timestamp - $lockedAt) > 300) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'OTP verification expired or not completed. Please verify again.'
-                ], 422);
+                return redirect()
+                    ->route('athlete.login.view')
+                    ->with('error', 'OTP verification expired or not completed. Please verify again.')
+                    ->withInput();
             }
 
-            // CRITICAL: Submitted phone MUST match session-locked phone
+            // ✅ Check if phone matches verified phone
             if ($request->mobile !== $verifiedPhone) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Security validation failed. Phone number does not match verified number.'
-                ], 422);
+                return redirect()
+                    ->route('athlete.login.view')
+                    ->with('error', 'Security validation failed. Phone number does not match verified number.')
+                    ->withInput();
             }
 
-            // Double-check OTP verification in database
+            // ✅ Check OTP was used
             $otpVerified = OtpValidation::where('phone', $request->mobile)
                 ->where('type', 'athlete_login')
                 ->where('is_used', 1)
                 ->first();
 
             if (!$otpVerified) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'OTP not verified. Please verify your mobile number again.'
-                ], 422);
+                return redirect()
+                    ->route('athlete.login.view')
+                    ->with('error', 'OTP not verified. Please verify your mobile number again.')
+                    ->withInput();
             }
 
             $user = User::where('phoneNumber', $request->mobile)
@@ -208,30 +216,38 @@ class AthleteAuthController extends Controller
                 ->first();
 
             if (!$user) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Athlete not found'
-                ], 403);
+                return redirect()
+                    ->route('athlete.login.view')
+                    ->with('error', 'Athlete record not found. Please register to continue.')
+                    ->withInput();
             }
 
+            //  ACCOUNT STATUS CHECK (IMPORTANT)
+            if ($user->account_status == 0) {
+                return redirect()
+                    ->route('athlete.login.view')
+                    ->with('error', 'Invalid credentials.Access restricted.')
+                    ->withInput();
+            }
 
             Auth::login($user);
 
+            // Cleanup
             OtpValidation::where('phone', $request->mobile)
                 ->where('type', 'athlete_login')
                 ->delete();
 
             session()->forget(['verified_login_phone', 'login_phone_locked_at']);
 
-            return redirect()
-                ->route('athlete.dashboard');
+            return redirect()->route('athlete.dashboard');
 
         } catch (\Exception $e) {
             Log::error('Login Error: ' . $e->getMessage());
-            return response()->json([
-                'status' => false,
-                'message' => 'Login failed. Please try again.'
-            ], 500);
+
+            return redirect()
+                ->route('athlete.login.view')
+                ->with('error', 'Login failed. Please try again.')
+                ->withInput();
         }
     }
 
@@ -245,6 +261,29 @@ class AthleteAuthController extends Controller
         return redirect()
             ->route('athlete.login.view')
             ->with('success', 'Logged out successfully');
+    }
+
+    public function deactivateView()
+    {
+        $pageTitle = 'Deactivate My Account';
+        return view('athlete.athleteProfile.accountDeactivate', compact('pageTitle'));
+    }
+
+    public function deactivate()
+    {
+        $user = auth()->user();
+
+        if (!$user) {
+            return redirect()->back()->with('error', 'User not found');
+        }
+
+        // status column use kar rahe ho to
+        $user->account_status = 0;
+        $user->save();
+
+        auth()->logout();
+
+        return redirect('/athlete/login')->with('success', 'Account deactivated successfully');
     }
 
 }

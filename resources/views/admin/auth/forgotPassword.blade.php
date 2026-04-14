@@ -1,42 +1,44 @@
 <!DOCTYPE html>
 <html lang="en" class="light-style customizer-hide" dir="ltr" data-theme="theme-default" data-assets-path="../assets/"
-  data-template="vertical-menu-template-free">
+    data-template="vertical-menu-template-free">
 
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport"
-    content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+    <meta charset="utf-8" />
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
 
-  <title>AlumniIndia - Forgot Password </title>
+    <title>AlumniIndia - Forgot Password </title>
 
-  <!-- Favicon -->
-  <link rel="icon" type="image/x-icon" href="{{ asset('admin_assets/assets/img/favicon/favicon.ico') }}" />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="{{ asset('admin_assets/assets/img/favicon/favicon.png') }}" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
 
-  <!-- Icons -->
-  <link rel="stylesheet" href="{{ asset('admin_assets/assets/vendor/fonts/boxicons.css') }}" />
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-  <!-- Core CSS -->
-  <link rel="stylesheet" href="{{ asset('admin_assets/assets/vendor/css/core.css') }}" />
-  <link rel="stylesheet" href="{{ asset('admin_assets/assets/vendor/css/theme-default.css') }}" />
-  <link rel="stylesheet" href="{{ asset('admin_assets/assets/css/demo.css') }}" />
+    <!-- Icons -->
+    <link rel="stylesheet" href="{{ asset('admin_assets/assets/vendor/fonts/boxicons.css') }}" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <!-- Core CSS -->
+    <link rel="stylesheet" href="{{ asset('admin_assets/assets/vendor/css/core.css') }}" />
+    <link rel="stylesheet" href="{{ asset('admin_assets/assets/vendor/css/theme-default.css') }}" />
+    <link rel="stylesheet" href="{{ asset('admin_assets/assets/css/demo.css') }}" />
 
-  <!-- Vendors CSS -->
-  <link rel="stylesheet"
-    href="{{ asset('admin_assets/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css') }}" />
+    <!-- Vendors CSS -->
+    <link rel="stylesheet"
+        href="{{ asset('admin_assets/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css') }}" />
 
-  <!-- Page CSS -->
-  <link rel="stylesheet" href="{{ asset('admin_assets/assets/vendor/css/pages/page-auth.css') }}" />
+    <!-- Page CSS -->
+    <link rel="stylesheet" href="{{ asset('admin_assets/assets/vendor/css/pages/page-auth.css') }}" />
 
-  <!-- Helpers -->
-  <script src="{{ asset('admin_assets/assets/vendor/js/helpers.js') }}"></script>
+    <!-- Helpers -->
+    <script src="{{ asset('admin_assets/assets/vendor/js/helpers.js') }}"></script>
 
-  <!-- Config -->
-  <script src="{{ asset('admin_assets/assets/js/config.js') }}"></script>
- <style>
-  body{
-      background-color: #e6e6e6;}
- </style>
+    <!-- Config -->
+    <script src="{{ asset('admin_assets/assets/js/config.js') }}"></script>
+    <style>
+        body {
+            background-color: #e6e6e6;
+        }
+    </style>
 </head>
 
 <body>
@@ -44,65 +46,75 @@
 
     <div class="container-xxl">
         <div class="authentication-wrapper authentication-basic container-p-y">
-              <div class="div-section-all-logins auth-ui">
+            <div class="div-section-all-logins auth-ui">
                 <!-- Forgot Password -->
                 <div class="row">
-                     <div class="col-md-6 auth-left">
-                       <div class="auth-left-content">
-                           <h2>Welcome to Admin Login</h2>
-                           <p>
-                            Securely access your admin dashboard to manage alumni data and platform operations.
-                           </p>
-                       </div>
-                      </div>
-                      <div class="col-md-6">
-
-                      
-                   <div class="login-sections">
-                        <!-- Logo -->
-                        <div class="app-brand justify-content-center">
-                            <a href="index.html" class="app-brand-link gap-2">
-                            <img src="{{ asset('admin_assets/images/logo-black.png') }}" alt="logo">
-                            </a>
-                          </div>
-                        <!-- /Logo --><div class="left-and"><h1>Forgot Password?</h1></div>
-                         <p>Enter your email and we'll send you instructions to reset your password.</p>
-                          
-                        <form id="formAuthentication" class="mb-3" action="{{ route('admin.forgot.password.submit') }}"
-                            method="POST">
-                            @if (session('error'))
-                                <div class="alert alert-danger">
-                                    {{ session('error') }}
-                                </div>
-                            @endif
-
-                            @if (session('success'))
-                                <div class="alert alert-success">
-                                    {{ session('success') }}
-                                </div>
-                            @endif
-                            @csrf
-
-                            <div class="mb-3">
-                                <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" name="email" placeholder="Enter your email"
-                                    @error('email') is-invalid @enderror>
-
-                                @error('email')
-                                    <div class="invalid-feedback d-block">{{ $message }}</div>
-                                @enderror
-                            </div><br>
-                            <button class="btn btn-primary d-grid w-100">Send Reset Link</button>
-                        </form>
-                        <div class="text-center">
-                            <a href="{{ route('admin.login.view') }}"
-                                class="back-login">
-                                <i class="bx bx-chevron-left scaleX-n1-rtl bx-sm"></i>
-                                Back to logIn
-                            </a>
+                    <div class="col-md-6 auth-left">
+                        <div class="auth-left-content">
+                            <h2>Admin Password Recovery</h2>
+                            <p>
+                                Enter your registered email address to reset your password and access the admin
+                                dashboard.
+                            </p>
                         </div>
                     </div>
-                </div>
+                    <div class="col-md-6">
+
+
+                        <div class="login-sections">
+                            <!-- Logo -->
+                            <div class="app-brand justify-content-center">
+                                <a href="index.html" class="app-brand-link gap-2">
+                                    <img src="{{ asset('admin_assets/images/logo-black.png') }}" alt="logo">
+                                </a>
+                            </div>
+                            <!-- /Logo -->
+                            <div class="left-and">
+                                <h1>Forgot Password?</h1>
+                            </div>
+                            <p>Enter your email and we'll send you instructions to reset your password.</p>
+
+                            <form id="formAuthentication" class="mb-3"
+                                action="{{ route('admin.forgot.password.submit') }}" method="POST">
+                                @if (session('error'))
+                                    <div class="alert alert-danger">
+                                        {{ session('error') }}
+                                    </div>
+                                @endif
+
+                                @if (session('success'))
+                                    <div class="alert alert-success">
+                                        {{ session('success') }}
+                                    </div>
+                                @endif
+                                @csrf
+
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">Email <span
+                                            class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" name="email" placeholder="Enter your email"
+                                        @error('email') is-invalid @enderror>
+
+                                    @error('email')
+                                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                                    @enderror
+                                </div><br>
+                                <button id="submitBtn" class="btn btn-primary d-grid w-100">
+                                    <span id="btnText">Send Reset Link</span>
+                                    <span id="btnLoader" style="display:none;">
+                                        <i class="fa fa-spinner fa-spin"></i> Processing...
+                                    </span>
+                                </button>
+                                <!-- <button class="btn btn-primary d-grid w-100">Send Reset Link</button> -->
+                            </form>
+                            <div class="text-center">
+                                <a href="{{ route('admin.login.view') }}" class="back-login btn-login-2">
+                                    <i class="bx bx-chevron-left scaleX-n1-rtl bx-sm"></i>
+                                    Back to Login
+                                </a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <!-- /Forgot Password -->
             </div>
@@ -120,6 +132,13 @@
     <!-- Main JS -->
     <script src="{{ asset('admin_assets/assets/js/main.js') }}"></script>
 
+        <script>
+        $('#formAuthentication').on('submit', function () {
+            $('#submitBtn').prop('disabled', true);
+            $('#btnText').hide();
+            $('#btnLoader').show();
+        });
+    </script>
     <!-- <script async defer src="https://buttons.github.io/buttons.js"></script> -->
 </body>
 

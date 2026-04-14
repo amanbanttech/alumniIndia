@@ -10,18 +10,11 @@
   <meta name="csrf-token" content="{{ csrf_token() }}">
 
   <!-- Favicon -->
-  <link rel="icon" type="image/x-icon" href="{{ asset('athlete_assets/assets/img/favicon/favicon.ico') }}" />
-
-  <!-- Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&display=swap"
-    rel="stylesheet" />
-
-
+  <link rel="icon" type="image/x-icon" href="{{ asset('athlete_assets/assets/img/favicon/favicon.png') }}" />
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css"> 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 
 
   <!-- Icons -->
@@ -30,10 +23,19 @@
   <link rel="stylesheet" href="{{ asset('athlete_assets/assets/vendor/css/core.css') }}" />
   <link rel="stylesheet" href="{{ asset('athlete_assets/assets/vendor/css/theme-default.css') }}" />
   <link rel="stylesheet" href="{{ asset('athlete_assets/assets/css/demo.css') }}" />
+ <!-- Vendors -->
+  <link rel="stylesheet"
+    href="{{ asset('athlete_assets/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css') }}" />
 
+  <script src="{{ asset('athlete_assets/assets/vendor/js/helpers.js') }}"></script>
+  <script src="{{ asset('athlete_assets/assets/js/config.js') }}"></script>
+
+  
   <style>
     /* ===== DASHBOARD WIREFRAME STYLE ===== */
-
+body{
+  font-family: 'Roboto'!important;
+}
     .dashboard-title {
       text-align: center;
       font-weight: 600;
@@ -79,12 +81,7 @@
   </style>
 
 
-  <!-- Vendors -->
-  <link rel="stylesheet"
-    href="{{ asset('athlete_assets/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css') }}" />
-
-  <script src="{{ asset('athlete_assets/assets/vendor/js/helpers.js') }}"></script>
-  <script src="{{ asset('athlete_assets/assets/js/config.js') }}"></script>
+ 
 </head>
 
 <body>
@@ -96,10 +93,8 @@
       <!-- ================= SIDEBAR ================= -->
       <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
         <div class="app-brand demo">
-          <a href="{{ route('admin.dashboard') }}" class="app-brand-link">
-            <span class="app-brand-text demo menu-text fw-bolder ms-2">
-              Alumni
-            </span>
+          <a href="{{ route('frontend.index') }}" class="app-brand-link">
+            <img src="{{ asset('admin_assets/images/logo-white.png') }}" alt="logo">
           </a>
           <a href="javascript:void(0);" class="layout-menu-toggle menu-link ms-auto d-xl-none">
             <i class="bx bx-chevron-left"></i>
@@ -109,11 +104,45 @@
         <ul class="menu-inner py-1">
           <li class="menu-item {{ request()->routeIs('athlete.dashboard') ? 'active' : '' }}">
             <a href="{{ route('athlete.dashboard') }}" class="menu-link">
-              <i class="menu-icon tf-icons bx bx-home-circle"></i>
+              <i class="fas fa-layer-group"></i>
               <div>Dashboard</div>
             </a>
           </li>
 
+          <li class="menu-item {{ request()->routeIs('athlete.manage-membership') ? 'active' : '' }}">
+            <a href="{{ route('athlete.manage-membership') }}" class="menu-link">
+              <i class="fas fa-id-card"></i>
+              <div>Manage Membership</div>
+            </a>
+          </li>
+
+          <li class="menu-item {{ request()->routeIs('athlete.manage-videos') ? 'active' : '' }}">
+            <a href="{{ route('athlete.manage-videos') }}" class="menu-link">
+              <i class="fas fa-video"></i>
+              <div>Manage Videos</div>
+            </a>
+          </li>
+
+          <li class="menu-item {{ request()->routeIs('athlete.set-university-preference') ? 'active' : '' }}">
+            <a href="{{ route('athlete.set-university-preference') }}" class="menu-link">
+             <i class="fas fa-university"></i>
+              <div>Set Universities Preferences</div>
+            </a>
+          </li>
+
+          <li class="menu-item {{ request()->routeIs('athlete.current-scholarships') ? 'active' : '' }}">
+            <a href="{{ route('athlete.current-scholarships') }}" class="menu-link">
+               <i class="fas fa-award"></i>
+              <div>Current Scholarships</div>
+            </a>
+          </li>
+
+          <li class="menu-item {{ request()->routeIs('athlete.mentor') ? 'active' : '' }}">
+            <a href="{{ route('athlete.mentor') }}" class="menu-link">
+             <i class="fas fa-user-tie"></i>
+              <div>My Mentor</div>
+            </a>
+          </li>
 
 
 
@@ -138,23 +167,43 @@
             <ul class="navbar-nav flex-row align-items-center ms-auto">
               <li class="nav-item dropdown-user dropdown">
                 <a class="nav-link dropdown-toggle hide-arrow" href="#" data-bs-toggle="dropdown">
+                   <div class="d-flex align-items-center gap-2">
                   <div class="avatar avatar-online">
                     <img src="{{ Auth::user()->image
-  ? asset('athlete_assets/images/' . Auth::user()->image)
-  : asset('athlete_assets/assets/img/avatars/1.png') }}" class="w-px-40 h-auto rounded-circle">
+                       ? asset('athlete_assets/images/' . Auth::user()->image)
+                       : asset('athlete_assets/assets/img/avatars/1.png') }}" class="w-px-40 h-auto rounded-circle">
                   </div>
-                </a>
+                   <div class="admin-info text-start">
+      <div class="admin-name">
+       {{ auth()->user()->name ?? 'Admin' }}
+      </div>
+      <div class="admin-role">
+        Athlete
+      </div>
+    </div>
+
+    <!-- Chevron -->
+    <i class="fas fa-chevron-down admin-chevron"></i>
+                   </div>  </a>
 
                 <ul class="dropdown-menu dropdown-menu-end">
-                  <li class="dropdown-item-text">
+                  {{-- <li class="dropdown-item-text">
                     <strong>{{ auth()->user()->name ?? 'Admin' }}</strong>
+                  </li>
+                  <li>
+                    <div class="dropdown-divider"></div>
+                  </li> --}}
+                  <li>
+                    <a class="dropdown-item" href="{{ route('athlete.profile') }}">
+                     <i class="fas fa-user"></i> My Profile
+                    </a>
                   </li>
                   <li>
                     <div class="dropdown-divider"></div>
                   </li>
                   <li>
-                    <a class="dropdown-item" href="{{ route('athlete.profile') }}">
-                      <i class="bx bx-power-off me-2"></i> My Profile
+                    <a class="dropdown-item" href="{{ route('athlete.deactivateView') }}">
+                     <i class="fas fa-user"></i> Deactivate Account
                     </a>
                   </li>
                   <li>
@@ -180,12 +229,14 @@
             @yield('content')
           </div>
 
-          <!-- <footer class="content-footer footer bg-footer-theme text-end px-4 py-2">
-            © {{ date('Y') }} Alumni Connect
-          </footer> -->
+        
         </div>
         <!-- ================= /CONTENT ================= -->
-
+  <footer class="content-footer footer bg-footer-theme text-end px-4 py-2">
+            © {{ date('Y') }} 
+              Alumni India. Powered by<a href="https://www.banttech.com/" target="_blank" class="text-decoration-none"> <b>Banttech</b>
+            </a>
+          </footer>
       </div>
     </div>
   </div>
@@ -196,6 +247,7 @@
   <script src="{{ asset('athlete_assets/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js') }}"></script>
   <script src="{{ asset('athlete_assets/assets/vendor/js/menu.js') }}"></script>
   <script src="{{ asset('athlete_assets/assets/js/main.js') }}"></script>
+  @stack('scripts')
 </body>
 
 </html>

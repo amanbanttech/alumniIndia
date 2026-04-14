@@ -9,12 +9,13 @@ class University extends Model
 {
     use HasFactory;
 
-    protected $table = 'universitys';
+    protected $table = 'universities';
 
     protected $fillable = [
         'user_id',
         'state',
         'city',
+        'state_id',
         'about',
         'address',
         'emblem_logo',
@@ -26,14 +27,9 @@ class University extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function states()
+    public function state()
     {
-        return $this->belongsToMany(
-            State::class,
-            'university_states',
-            'university_id',
-            'state_id'
-        );
+        return $this->belongsTo(State::class);
     }
 
     public function sports()
@@ -47,5 +43,23 @@ class University extends Model
     }
 
 
+    public function scholarships()
+    {
+        return $this->hasMany(UniversityScholarship::class, 'university_id');
+    }
 
+    public function scholarshipSeats()
+    {
+        return $this->hasMany(ScholarshipSeat::class, 'university_id');
+    }
+
+    public function courses()
+    {
+        return $this->belongsToMany(
+            Course::class,
+            'university_courses',       // pivot table
+            'university_id',            // FK here
+            'university_course_id'      // FK there
+        )->withPivot('id');
+    }
 }

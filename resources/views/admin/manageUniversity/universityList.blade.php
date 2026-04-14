@@ -2,20 +2,7 @@
 
 @section('content')
     <div class="content-wrapper">
-            <div class="commmon-crads">
-
-            {{-- Header --}}
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                 <div class="simple-dashboard-heading">
-    <i class="fa fa-university"></i>
-    <span>Manage Universities</span>
-</div> </div>
-                <div class="btn-ad-asll">
-                 <a href="{{ route('admin.university.add') }}" class="btn btn-primary">
-                    <i class="bx bx-plus me-1"></i> Add University
-                </a>
-            </div>
-           
+        <div class="commmon-crads">
             @if (session('success'))
                 <div class="alert alert-success">{{ session('success') }}</div>
             @endif
@@ -23,6 +10,26 @@
             @if (session('error'))
                 <div class="alert alert-danger">{{ session('error') }}</div>
             @endif
+            @if(request('success'))
+                <div class="alert alert-success">
+                    {{ request('success') }}
+                </div>
+            @endif
+
+            {{-- Header --}}
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div class="simple-dashboard-heading">
+                    <i class="fa fa-university"></i>
+                    <span>Manage Universities</span>
+                </div>
+            </div>
+            <div class="btn-ad-asll">
+                <a href="{{ route('admin.university.add') }}" class="btn btn-primary">
+                    <i class="bx bx-plus me-1"></i> Add University
+                </a>
+            </div>
+
+
             {{-- Table Card --}}
             <div class="card">
 
@@ -45,7 +52,8 @@
                                     <td>{{ ucfirst($university->user->name ?? '-') }}</td>
                                     <td>{{ $university->user->phoneNumber ?? '-' }}</td>
                                     <td>{{ $university->user->email ?? '-' }}</td>
-                                    <td>{{ ucfirst($university->address ?? '-') }}</td>
+                                    <td>{{ ucfirst($university->address ?? '-') }},{{ ucfirst($university->city ?? '-') }},{{ $university->state->name ?? '-' }}
+                                    </td>
                                     <td class="text-center">
                                         <a href="{{ route('admin.university.view', $university->id) }}"
                                             class="btn btn-sm btn-view">View</a>

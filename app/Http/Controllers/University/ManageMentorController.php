@@ -35,14 +35,14 @@ class ManageMentorController extends Controller
 
             $university = Auth::user()->university;
 
+            // Check if university is linked
             if (!$university) {
                 return back()->with('error', 'University not linked with this account.');
             }
 
-            $mentors = Mentor::with(['user', 'sport'])
-                ->whereHas('sport.university', function ($q) use ($university) {
-                    $q->where('id', $university->id);
-                })
+            // Fetch mentors with related user and sport data
+            $mentors = Mentor::with(['user', 'sport.sport'])
+                ->where('university_id', $university->id)
                 ->orderBy('id', 'desc')
                 ->get();
 
@@ -56,16 +56,23 @@ class ManageMentorController extends Controller
 
     public function add()
     {
-        // dd(Auth::user()->university_id);
 
         try {
             $pageTitle = 'Add Mentor';
 
             $university = Auth::user()->university;
 
-            $sports = $university
-                ? $university->sports()->orderBy('name')->get()
-                : collect();
+            // Check if university exists
+            if (!$university) {
+                return redirect()->back()
+                    ->with('error', 'University not linked with this account.');
+            }
+
+            // Fetch sports associated with the university
+            $sports = $university->sports()
+                ->with('sport')
+                ->get();
+
 
 
             return view('university.mentors.addMentor', compact('pageTitle', 'sports'));
@@ -207,12 +214,14 @@ class ManageMentorController extends Controller
                 'otp' => 'required|digits:6',
             ],
             [
-                'sport_id.required' => 'The Sport category field is required.',
+                'sport_id.required' => 'The sport category field is required.',
                 'sport_id.exists' => 'Please select a valid sport.',
-                'name.required' => 'The Mentor name field is required.',
-                'name.regex' => 'The Mentor name should contain only letters and spaces.',
+                'name.required' => 'The mentor name field is required.',
+                'name.regex' => 'The mentor name should contain only letters and spaces.',
             ]
         );
+
+        // OTP VERIFICATION CHECK
 
         if (
             !session()->has('verified_registration_phone') ||
@@ -225,12 +234,15 @@ class ManageMentorController extends Controller
 
         try {
 
+            // UNIVERSITY CHECK
+
             $university = Auth::user()->university;
 
             if (!$university) {
                 return back()->with('error', 'University not linked with this account.');
             }
 
+            // VALIDATE SPORT BELONGS TO UNIVERSITY
             $sport = $university->sports()
                 ->where('id', $request->sport_id)
                 ->first();
@@ -249,6 +261,7 @@ class ManageMentorController extends Controller
             Mentor::create([
                 'user_id' => $user->id,
                 'sport_id' => $request->sport_id,
+                'university_id' => $university->id,
             ]);
 
 
@@ -258,11 +271,14 @@ class ManageMentorController extends Controller
                 'name' => $user->name,
                 'email' => $user->email,
                 'phone' => $user->phoneNumber,
+                'loginUrl' => route('mentor.login.view'),
+
             ], function ($message) use ($user) {
                 $message->to($user->email);
-                $message->subject('Mentor Registration Successful');
+                $message->subject('Mentor Account Created Successfully');
             });
 
+            // Clear OTP session after successful registration
             session()->forget('verified_registration_phone');
 
             return redirect()->route('university.mentor.list')->with('success', 'Mentor added successfully');
@@ -285,15 +301,20 @@ class ManageMentorController extends Controller
                 return back()->with('error', 'University not linked with this account.');
             }
 
-            $mentor = Mentor::with(['user', 'sport'])
+            // FETCH MENTOR WITH RELATIONS
+            $mentor = Mentor::with(['user', 'sport.sport'])
                 ->where('id', $id)
                 ->firstOrFail();
 
-            if ($mentor->sport->university_id !== $university->id) {
+            // Ensure mentor belongs to same university
+            if ($mentor->university_id !== $university->id) {
                 return back()->with('error', 'Unauthorized access.');
             }
 
-            $sports = $university->sports()->orderBy('name')->get();
+            // FETCH SPORTS LIST 
+            $sports = $university->sports()
+                ->with('sport')
+                ->get();
 
             return view(
                 'university.mentors.editMentor',
@@ -301,6 +322,8 @@ class ManageMentorController extends Controller
             );
 
         } catch (\Exception $e) {
+            Log::error('University Edit Error: ' . $e->getMessage());
+
             return back()->with('error', 'Mentor not found.');
         }
     }
@@ -308,13 +331,19 @@ class ManageMentorController extends Controller
 
     public function update(Request $request, $id)
     {
-        $mentor = Mentor::with('user')->findOrFail($id);
-
+        // FETCH MENTOR WITH USER 
+        $mentor = Mentor::where('id', $id)
+            ->where('university_id', Auth::user()->university->id)
+            ->with('user')
+            ->firstOrFail();
+            
         $request->validate(
             [
                 'name' => 'required|string|max:255|regex:/^[A-Za-z ]+$/',
                 'email' => 'required|email|unique:users,email,' . $mentor->user_id,
                 'mobile' => 'required|digits:10|unique:users,phoneNumber,' . $mentor->user_id,
+                'otp_verified' => 'required|in:1',
+
                 'sport_id' => 'required|exists:university_sports,id',
             ],
             [
@@ -322,9 +351,20 @@ class ManageMentorController extends Controller
                 'sport_id.exists' => 'Please select a valid sport.',
                 'name.required' => 'The Mentor name field is required.',
                 'name.regex' => 'The Mentor name should contain only letters and spaces.',
+                'otp_verified.in' => 'Please verify mobile number before updating.',
 
             ]
         );
+
+        // OTP VERIFICATION (ONLY IF MOBILE CHANGED)
+        if ($request->mobile != $mentor->user->phoneNumber) {
+
+            if ($request->otp_verified != 1) {
+                return back()
+                    ->withErrors(['otp_verified' => 'Please verify mobile number before updating.'])
+                    ->withInput();
+            }
+        }
         DB::beginTransaction();
 
         try {

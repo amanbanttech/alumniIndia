@@ -13,6 +13,7 @@ class Mentor extends Model
     protected $fillable = [
         'user_id',
         'sport_id',
+        'university_id',
     ];
 
     /**
@@ -29,5 +30,22 @@ class Mentor extends Model
     public function sport()
     {
         return $this->belongsTo(UniversitySport::class);
+    }
+
+    public function assignedAthletes()
+    {
+        return $this->hasMany(AthleteAssignMentor::class, 'mentor_id');
+    }
+
+    public function university()
+    {
+        return $this->belongsTo(University::class);
+    }
+
+ 
+
+    public function feedbacks()
+    {
+        return $this->hasMany(MentorFeedback::class, 'mentor_id');
     }
 }

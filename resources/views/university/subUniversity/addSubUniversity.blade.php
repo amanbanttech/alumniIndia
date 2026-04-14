@@ -2,23 +2,10 @@
 
 @section('content')
 <div class="content-wrapper">
-    <div class="container-xxl flex-grow-1 container-p-y">
+              <div class="commmon-crads">
+                <div id="formMessage" class="alert d-none"></div>
 
-        <div class="row">
-            <div class="col-xxl">
-                <div class="card mb-4">
-
-                    {{-- Header --}}
-                    <div class="card-header">
-                        <h5 class="mb-0">Add Sub-University Admin</h5>
-                    </div>
-
-                    {{-- Body --}}
-                    <div class="card-body">
-                        <div id="formMessage" class="alert d-none"></div>
-
-
-                        @if (session('success'))
+                @if (session('success'))
                             <div class="alert alert-success">{{ session('success') }}</div>
                         @endif
 
@@ -26,66 +13,88 @@
                             <div class="alert alert-danger">{{ session('error') }}</div>
                         @endif
 
+        <div class="row">
+            <div class="col-xxl">
+                <div class="card mb-4">
+
+                     <div class="simple-dashboard-heading">
+     <i class="fa fa-university"></i>
+    <span>Add Sub-University Admin</span>
+</div> 
+
+                    {{-- Body --}}
+                    <div class="card-body">
+
+
+                        
+
                         <form action="{{ route('subUniversity.store') }}" method="POST" enctype="multipart/form-data">
                             @csrf
 
                             {{-- University Name --}}
                             <div class="row mb-3">
-                                <label class="col-sm-2 col-form-label">
+                              <div class="col-md-12">
+                                  <label class="col-sm-12 col-form-label">
                                     Sub-University Admin Name <span class="text-danger">*</span>
                                 </label>
-                                <div class="col-sm-10">
+                                <div class="col-sm-12">
                                     <input type="text" name="name" class="form-control"
                                         value="{{ old('name') }}" placeholder="Enter sub-university admin name">
                                     @error('name')
                                         <div class="text-danger">{{ $message }}</div>
                                     @enderror
                                 </div>
+                              </div>
                             </div>
 
                             {{-- Email --}}
                             <div class="row mb-3">
-                                <label class="col-sm-2 col-form-label">
+                               <div class="col-md-12">
+                                 <label class="col-sm-12 col-form-label">
                                     Email <span class="text-danger">*</span>
                                 </label>
-                                <div class="col-sm-10">
-                                    <input type="email" name="email" class="form-control"
+                                <div class="col-sm-12">
+                                    <input type="text" name="email" class="form-control"
                                         value="{{ old('email') }}" placeholder="Enter email address">
                                     @error('email')
                                         <div class="text-danger">{{ $message }}</div>
                                     @enderror
                                 </div>
+                               </div>
                             </div>
 
                             {{-- Mobile --}}
                             <div class="row mb-3">
-                                <label class="col-sm-2 col-form-label">
+                              <div class="col-md-12">
+                                  <label class="col-sm-12 col-form-label">
                                     Mobile <span class="text-danger">*</span>
                                 </label>
-                                <div class="col-sm-10 d-flex gap-2">
+                                <div class="col-sm-12 d-flex gap-2 position-relative">
                                     <input type="text" name="mobile" id="mobile" class="form-control"
                                         value="{{ old('mobile') }}" maxlength="10"
                                         placeholder="Enter mobile number"
                                         oninput="this.value=this.value.replace(/[^0-9]/g,'')">
 
-                                    <button type="button" class="btn btn-primary" id="sendOtpBtn">
+                                    <button type="button" class="btn btn-sent" id="sendOtpBtn">
                                         <span id="otpBtnText">Send OTP</span>
                                     </button>
 
                                 </div>
-                                <div class="offset-sm-2 col-sm-10">
+                                <div class="col-sm-12">
                                     @error('mobile')
                                         <div class="text-danger">{{ $message }}</div>
                                     @enderror
                                 </div>
+                              </div>
                             </div>
 
                             {{-- OTP --}}
                             <div class="row mb-3">
-                                <label class="col-sm-2 col-form-label">
+                               <div class="col-md-12">
+                                 <label class="col-sm-12 col-form-label">
                                     OTP <span class="text-danger">*</span>
                                 </label>
-                                <div class="col-sm-10">
+                                <div class="col-sm-12">
                                     <input type="text" name="otp" class="form-control"
                                         value="{{ old('otp') }}" maxlength="6"
                                         placeholder="Enter 6-digit OTP"
@@ -94,19 +103,18 @@
                                         <div class="text-danger">{{ $message }}</div>
                                     @enderror
                                 </div>
+                               </div>
                             </div>
 
                             <!-- Submit -->
                                 <div class="row justify-content-end">
-                                    <div class="col-sm-10">
-                                        <button type="submit" class="btn btn-primary">
+                                    <div class="col-sm-12">
+                                        <button type="submit" class="btn btn-add-univerity">
                                             Add Sub-University Admin
                                         </button>
                                     </div>
                                 </div>
-
                         </form>
-
                     </div>
                 </div>
             </div>
@@ -115,15 +123,7 @@
     </div>
 </div>
 
-    <script>
-        function previewImage(input, previewId) {
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = e => document.getElementById(previewId).src = e.target.result;
-                reader.readAsDataURL(input.files[0]);
-            }
-        }
-    </script>
+
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
